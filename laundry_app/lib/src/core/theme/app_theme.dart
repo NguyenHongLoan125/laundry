@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       primarySwatch: Colors.blue,
-      scaffoldBackgroundColor: Color(0xFFECF2FB),
+      scaffoldBackgroundColor: AppColors.backgroundMain,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF27BDAE),
-        foregroundColor: Color(0xFFECF2FB),
+        backgroundColor: AppColors.backgroundAppBar,
+        foregroundColor: AppColors.primary,
+        titleTextStyle: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Inter',
+          color: Color(0xFF27BDAE)
+        ),
       ),
     );
   }
