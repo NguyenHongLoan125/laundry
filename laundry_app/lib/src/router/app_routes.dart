@@ -20,7 +20,7 @@ class AppRoutes {
     register: (context)=> const RegisterScreen(),
     auth: (context)=> const AuthScreen(),
 
-    home: (context) =>  ServiceScreen(),
+    home: (context) => const HomeScreen(),
     // account: (context) => const AccountScreen(),
   };
 }

@@ -9,5 +9,6 @@ class AppColors {
   static const Color text = Color(0xFF27BDAE);
   static const Color textSecondary = Color(0xFF8F8F8F);
   static const Color textThird = Colors.white;
+  static const Color backgroundAppBar = Color(0xFFE5F3F8);
 
 }
