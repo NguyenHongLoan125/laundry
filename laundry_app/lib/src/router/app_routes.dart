@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/presentation/screens/auth_screen.dart';
 import 'package:laundry_app/src/presentation/screens/register_screen.dart';
+import 'package:laundry_app/src/presentation/screens/service_screen.dart';
 import 'route_names.dart';
 
 import '../presentation/screens/login_screen.dart';
@@ -19,7 +20,7 @@ class AppRoutes {
     register: (context)=> const RegisterScreen(),
     auth: (context)=> const AuthScreen(),
 
-    // home: (context) => const HomeScreen(),
+    home: (context) =>  ServiceScreen(),
     // account: (context) => const AccountScreen(),
   };
 }

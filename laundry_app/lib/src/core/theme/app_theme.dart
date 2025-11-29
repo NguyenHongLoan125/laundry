@@ -6,8 +6,8 @@ class AppTheme {
       primarySwatch: Colors.blue,
       scaffoldBackgroundColor: Color(0xFFECF2FB),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF27BDAE),
-        foregroundColor: Color(0xFFECF2FB),
+        backgroundColor: Color(0xFFECF2FB),
+        foregroundColor: Color(0xFF27BDAE),
       ),
     );
   }
