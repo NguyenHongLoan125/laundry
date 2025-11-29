@@ -14,7 +14,7 @@ class LaundryApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       // initialRoute: AppRoutes.auth,
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.register,
       routes: AppRoutes.routes,
     );
   }
