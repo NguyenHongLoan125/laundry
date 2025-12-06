@@ -4,13 +4,15 @@ import 'package:laundry_app/src/core/constants/app_colors.dart';
 import 'package:laundry_app/src/features/auth/data/models/home_model.dart';
 import 'package:laundry_app/src/presentation/controllers/home_controller.dart';
 import 'package:laundry_app/src/presentation/layouts/seven_parts_layout.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/appointment_home.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/banner_slider.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/recent_orders.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/type_of_clothes.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/types_of_service.dart';
-import 'package:laundry_app/src/presentation/widgets/home_page_widgets/washing_package.dart';
-import '../../router/route_names.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/appointment_home.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/banner_slider.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/recent_orders.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/type_of_clothes.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/types_of_service.dart';
+import 'package:laundry_app/src/presentation/pages/home_pages/washing_package.dart';
+import 'package:laundry_app/src/router/route_names.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
