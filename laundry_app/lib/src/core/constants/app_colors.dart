@@ -11,4 +11,5 @@ class AppColors {
   static const Color textThird = Colors.white;
   static const Color backgroundAppBar = Color(0xFFE5F3F8);
 
+
 }

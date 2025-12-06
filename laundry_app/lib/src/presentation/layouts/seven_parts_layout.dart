@@ -9,37 +9,50 @@ class SevenPartsLayout extends StatelessWidget {
   final Widget part6;
   final Widget part7;
 
-  const SevenPartsLayout({super.key,
+  const SevenPartsLayout({
+    super.key,
     required this.part1,
     required this.part2,
     required this.part3,
     required this.part4,
     required this.part5,
     required this.part6,
-    required this.part7
+    required this.part7,
   });
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final spacingLarge = size.height * 0.04;
+    final spacingMedium = size.height * 0.025;
+    final spacingSmall = size.height * 0.015;
+
     return SingleChildScrollView(
       child: Padding(
-          padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             part1,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingLarge),
+
             part2,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingMedium),
+
             part3,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingSmall),
+
             part4,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingMedium),
+
             part5,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingMedium),
+
             part6,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingMedium),
+
             part7,
-            const SizedBox(height: 20,),
+            SizedBox(height: spacingMedium),
           ],
         ),
       ),
