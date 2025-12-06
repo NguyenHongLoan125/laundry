@@ -108,7 +108,6 @@ class PackageCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // ✅ Nội dung chính (chừa đáy cho hàng price + button)
           Padding(
             padding: EdgeInsets.only(bottom: (size.width * 0.14).clamp(44.0, 60.0)),
             child: Column(
