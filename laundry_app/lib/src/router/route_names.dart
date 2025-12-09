@@ -5,5 +5,6 @@ class RouteNames {
   static const String homeManagement = '/home-management';
   static const String register = '/register';
   static const String login = '/login';
+  static const String createOrder ='/create-order';
 
 }

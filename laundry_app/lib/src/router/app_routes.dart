@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/presentation/screens/auth_screen.dart';
+import 'package:laundry_app/src/presentation/screens/create_order_screen.dart';
 import 'package:laundry_app/src/presentation/screens/register_screen.dart';
 import 'package:laundry_app/src/presentation/screens/service_screen.dart';
 import 'route_names.dart';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const account = RouteNames.account;
   static const register= RouteNames.register;
   static const login= RouteNames.login;
+  static const createOrder = RouteNames.createOrder;
 
   static final routes = <String, WidgetBuilder>{
     login: (context) => const LoginScreen(),
@@ -22,5 +24,6 @@ class AppRoutes {
 
     home: (context) => const HomeScreen(),
     // account: (context) => const AccountScreen(),
+    createOrder: (context) => CreateOrderScreen(),
   };
 }

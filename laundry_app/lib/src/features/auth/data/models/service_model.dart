@@ -1,8 +1,8 @@
-class Product{
+class ServiceModel{
   String ? name;
   String ? iconUrl;
 
-  Product({this.name, this.iconUrl});
+  ServiceModel({this.name, this.iconUrl});
 }
 
 class Appointment {

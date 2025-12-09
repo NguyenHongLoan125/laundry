@@ -1,9 +1,11 @@
-import '../../features/auth/data/models/home_model.dart';
+import 'package:laundry_app/src/features/auth/data/models/cloths_model.dart';
+
+import '../../features/auth/data/models/service_model.dart';
 
 class HomeController {
   bool isLoading = true;
-  List<Product>? services;
-  List<Product>? clothes;
+  List<ServiceModel>? services;
+  List<ClothsModel>? clothes;
 
   HomeController() {
     loadData();
@@ -13,18 +15,18 @@ class HomeController {
     await Future.delayed(const Duration(seconds: 2)); // giả API
 
     services = [
-      Product(name: "Giặt ủi", iconUrl: "https://via.placeholder.com/50"),
-      Product(name: "Sấy khô"),
-      Product(name: "Ủi đồ", iconUrl: null),
-      Product(name: "Giặt hấp"),
+      ServiceModel(name: "Giặt ủi", iconUrl: "https://via.placeholder.com/50"),
+      ServiceModel(name: "Sấy khô"),
+      ServiceModel(name: "Ủi đồ", iconUrl: null),
+      ServiceModel(name: "Giặt hấp"),
     ];
 
     clothes = [
-      Product(name: "Quần áo", iconUrl: "https://via.placeholder.com/50"),
-      Product(name: "Đặt biệt"),
-      Product(name: "Gấu bông", iconUrl: null),
-      Product(name: "Chăn"),
-      Product(name: "Rèm cửa")
+      ClothsModel(name: "Quần áo", iconUrl: "https://via.placeholder.com/50"),
+      ClothsModel(name: "Đặt biệt"),
+      ClothsModel(name: "Gấu bông", iconUrl: null),
+      ClothsModel(name: "Chăn"),
+      ClothsModel(name: "Rèm cửa")
     ];
 
     isLoading = false;

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_app/src/features/auth/data/models/cloths_model.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../features/auth/data/models/home_model.dart';
+import '../../../features/auth/data/models/service_model.dart';
 
 class TypeOfClothes extends StatelessWidget {
   final bool isLoading;
-  final List<Product>? clothes;
+  final List<ClothsModel>? clothes;
 
   const TypeOfClothes({
     super.key,
