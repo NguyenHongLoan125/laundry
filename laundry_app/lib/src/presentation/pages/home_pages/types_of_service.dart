@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
-import '../../../features/auth/data/models/home_model.dart';
+import '../../../features/auth/data/models/service_model.dart';
 
 class TypesOfService extends StatelessWidget {
   final bool isLoading;
-  final List<Product>? services;
+  final List<ServiceModel>? services;
 
   const TypesOfService({
     super.key,

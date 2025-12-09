@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../features/auth/data/models/home_model.dart';
+import '../../../features/auth/data/models/service_model.dart';
 
 class AppointmentHome extends StatelessWidget {
   final Appointment appointment;
-  const AppointmentHome({super.key, required this.appointment});
+  final VoidCallback seeAll;
+  const AppointmentHome({super.key, required this.appointment, required this.seeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class AppointmentHome extends StatelessWidget {
               ),
 
               InkWell(
-                onTap: (){},
+                onTap: seeAll,
                 child: Text(
                   'Xem tất cả',
                   style: TextStyle(

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
-import 'package:laundry_app/src/features/auth/data/models/home_model.dart';
+import 'package:laundry_app/src/features/auth/data/models/service_model.dart';
 import 'package:laundry_app/src/presentation/controllers/home_controller.dart';
 import 'package:laundry_app/src/presentation/layouts/seven_parts_layout.dart';
 import 'package:laundry_app/src/presentation/pages/home_pages/appointment_home.dart';
@@ -195,13 +195,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         part5: Container(
-          child: AppointmentHome(appointment: appointment),
+          child: AppointmentHome(
+              appointment: appointment,
+            seeAll: (){},
+          ),
         ),
         part6: Container(
-          child: RecentOrders(order: order,),
+          child: RecentOrders(order: order,seeAll: (){},),
         ),
         part7: Container(
-          child: WashingPackage(washingPackage: packages),
+          child: WashingPackage(washingPackage: packages,seeAll: (){},),
         ),
       ),
 
