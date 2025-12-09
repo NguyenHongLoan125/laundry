@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_app/src/features/auth/data/models/home_model.dart';
+import 'package:laundry_app/src/features/auth/data/models/service_model.dart';
 import '../../../core/constants/app_colors.dart';
 
 class RecentOrders extends StatelessWidget {
   final List<OrderModel> order;
+  final VoidCallback seeAll;
 
-  const RecentOrders({super.key, required this.order});
+  const RecentOrders({super.key, required this.order, required this.seeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class RecentOrders extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: seeAll,
                 child: Text(
                   'Xem tất cả',
                   style: TextStyle(
