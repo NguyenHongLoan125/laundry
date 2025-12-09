@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_app/src/features/auth/data/models/home_model.dart';
+import 'package:laundry_app/src/features/auth/data/models/service_model.dart';
 import '../../../core/constants/app_colors.dart';
 
 class WashingPackage extends StatelessWidget {
   final List<WashingPackageModel> washingPackage;
-  const WashingPackage({super.key, required this.washingPackage});
+  final VoidCallback seeAll;
+  const WashingPackage({super.key, required this.washingPackage, required this.seeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class WashingPackage extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: seeAll,
                 child: Text(
                   'Xem tất cả',
                   style: TextStyle(
@@ -108,6 +109,7 @@ class PackageCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
+
           Padding(
             padding: EdgeInsets.only(bottom: (size.width * 0.14).clamp(44.0, 60.0)),
             child: Column(
