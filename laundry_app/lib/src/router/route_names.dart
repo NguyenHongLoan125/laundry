@@ -13,5 +13,6 @@ class RouteNames {
   static const String orderTracking = '/order-tracking';
   static const String rating = '/rating';
   static const String laundryOrder = '/laundry_order';
+  static const String createOrder ='/create-order';
 
 }
