@@ -15,14 +15,16 @@ class HeaderText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Title outline text
         Stack(
+          alignment: Alignment.center,
           children: [
             Text(
               title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.pacifico(
-                fontSize: 48,
+                fontSize: 35,
                 foreground: Paint()
                   ..style = PaintingStyle.stroke
                   ..strokeWidth = 3
@@ -31,17 +33,15 @@ class HeaderText extends StatelessWidget {
             ),
             Text(
               title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.pacifico(
-                fontSize: 48,
+                fontSize: 35,
                 color: AppColors.backgroundSecondary,
               ),
             ),
           ],
         ),
-
         const SizedBox(height: 20),
-
-        // Sub message
         Text(
           message,
           textAlign: TextAlign.center,

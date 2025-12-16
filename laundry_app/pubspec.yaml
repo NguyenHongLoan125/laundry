@@ -35,7 +35,42 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^6.0.0
+#  latlong2: ^0.9.0
+#  url_launcher: ^6.1.6
+  permission_handler: ^12.0.1
+  flutter_map: ^7.0.2
+  vector_map_tiles: ^8.0.0
+  vector_tile_renderer: ^5.2.1
+  latlong2: ^0.9.1
+  flutter_map_marker_cluster: ^1.0.0
+  geojson_vi: ^2.0.1
+#  http: ^1.2.1
+  url_launcher: ^6.3.0
+  # State Management
+  get: ^4.6.6
 
+  # Functional Programming
+  dartz: ^0.10.1
+
+  http: ^1.2.0
+#  geolocator: ^12.0.0        # Lấy quyền + tọa độ hiện tại
+  geocoding: ^3.0.0          # Chuyển địa chỉ → tọa độ / ngược lại
+  flutter_typeahead: ^5.0.0  # Gợi ý địa chỉ autocomplete
+#  google_maps_flutter: ^2.12.3 #Theo video
+  geolocator: ^14.0.2
+#  provider: ^6.1.5
+#  flutter_polyline_points: ^3.0.1
+#  cherry_toast: ^1.13.0 #for toast message
+#  font_awesome_flutter: ^10.9.1 # for icon
+#######goong################
+#  maplibre_gl: ^0.19.0
+#  dio: ^5.1.2
+#  fetch_client: ^1.1.2
+#  cupertino_http: ^1.5.0
+##  geolocator: ^9.0.2
+##  http: ^1.2.1
+#  flutter_polyline_points: ^2.1.0
+#  polyline_codec: ^0.1.6
 
 dev_dependencies:
   flutter_test:
@@ -57,7 +92,6 @@ flutter:
     - family: Pacifico
       fonts:
         - asset: lib/src/assets/fonts/Pacifico-Regular.ttf
-
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

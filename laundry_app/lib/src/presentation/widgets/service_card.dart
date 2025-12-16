@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
-import 'package:laundry_app/src/features/service/data/models/service_model.dart';
+import 'package:laundry_app/src/features/service/domain/entities/service.dart';
 
 class ServiceCard extends StatelessWidget {
-  final ServiceModel service;
-  const ServiceCard({required this.service});
+  final Service service;
+
+  const ServiceCard({super.key, required this.service});
 
   @override
   Widget build(BuildContext context) {
@@ -18,15 +19,23 @@ class ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           Image.asset(
             service.icon,
             width: 48,
             height: 48,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.local_laundry_service, color: AppColors.primary),
+              );
+            },
           ),
-
           SizedBox(width: 16),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,18 +43,19 @@ class ServiceCard extends StatelessWidget {
                 Text(
                   service.name,
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold
-                  )
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   service.description,
                   style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[700]
+                    fontSize: 13,
+                    color: Colors.grey[700],
                   ),
-                )
+                ),
               ],
             ),
           ),

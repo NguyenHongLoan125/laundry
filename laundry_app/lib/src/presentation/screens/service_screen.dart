@@ -1,149 +1,124 @@
+
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
-import 'package:laundry_app/src/features/service/data/models/price_model.dart';
-import 'package:laundry_app/src/presentation/controllers/service_controller.dart';
-import 'package:laundry_app/src/presentation/widgets/price-item.dart';
-import 'package:laundry_app/src/presentation/widgets/service_card.dart';
-import 'package:laundry_app/src/presentation/widgets/service_type_dropdown.dart';
+import '../controllers/service_controller.dart';
+import 'package:provider/provider.dart';
+import '../widgets/price-item.dart';
+import '../widgets/service_card.dart';
+import '../widgets/service_type_dropdown.dart';
 
 class ServiceScreen extends StatefulWidget {
+  const ServiceScreen({super.key});
+
   @override
-  _ServiceScreenState createState() => _ServiceScreenState();
+  State<ServiceScreen> createState() => _ServiceScreenState();
 }
 
 class _ServiceScreenState extends State<ServiceScreen> {
-  final controller = ServiceController();
-  String? selectedServiceType;
-
   @override
   void initState() {
     super.initState();
-
-    // Thêm Future.microtask để tránh rebuild ngay trong initState
-    Future.microtask(() async {
-      await controller.loadData();
-
-      // Chọn service đầu tiên từ dữ liệu JSON khi load xong
-      if (controller.prices.isNotEmpty) {
-        setState(() {
-          selectedServiceType = controller.prices.first.type;
-        });
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ServiceController>().loadData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.backgroundMain,
       appBar: AppBar(
-        title: Text("Dịch vụ"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: () {
-              controller.loadData();
-            },
-          )
-        ],
+        title: Text('Dịch vụ', style: TextStyle(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.backgroundSecondary,
+        elevation: 0,
       ),
-
-      body: AnimatedBuilder(
-        animation: controller,
-        builder: (context, _) {
+      body: Consumer<ServiceController>(
+        builder: (context, controller, child) {
           if (controller.isLoading) {
             return Center(child: CircularProgressIndicator());
           }
+
           return SingleChildScrollView(
             padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Loại dịch vụ chính
                 Text(
-                    "Loại dịch vụ chính",
-                    style: TextStyle(
-                      color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold
-                    )
-                ),
-                SizedBox(height: 10),
-
-                Column(
-                  children: controller.mainServices.map((service) {
-                    return ServiceCard(service: service);
-                  }).toList(),
-                ),
-                SizedBox(height: 24),
-
-                Text(
-                    "Loại dịch vụ phụ",
-                    style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold
-                    )
-                ),
-                SizedBox(height: 10),
-
-                Column(
-                  children: controller.extraServices.map((service) {
-                    return ServiceCard(service: service);
-                  }).toList(),
-                ),
-                SizedBox(height: 24),
-
-                Text(
-                    "Bảng giá tham khảo",
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    )
-                ),
-                SizedBox(height: 10),
-
-                Text(
-                    "Giá tiền sẽ được phân loại theo từng loại đồ và dịch vụ khác nhau",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    )
-                ),
-
-                // Nếu selectedServiceType null thì không hiện bảng giá
-                if (selectedServiceType == null)
-                  Center(child: Text("Bảng giá hiện không có sẵn"))
-                else
-                  ServiceTypeDropdown(
-                    selectedValue: selectedServiceType,
-                    options: controller.prices.map((p) => p.type).toSet().toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedServiceType = value;
-                        });
-                      }
-                    },
+                  'Loại dịch vụ chính',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
                   ),
+                ),
+                SizedBox(height: 12),
+
+                // Main Services List
+                ...controller.mainServices.map((service) => ServiceCard(service: service)),
+
+                SizedBox(height: 20),
+
+                // Loại dịch vụ phụ
+                Text(
+                  'Loại dịch vụ phụ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(height: 12),
+
+                // Extra Services List
+                ...controller.extraServices.map((service) => ServiceCard(service: service)),
+
+                SizedBox(height: 20),
+
+                // Bảng giá tham khảo
+                Text(
+                  'Bảng giá tham khảo',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Giá tiền sẽ được phân loại theo từng loại đồ và dịch vụ khác nhau',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 SizedBox(height: 16),
 
-                // Bảng giá, chỉ hiển thị khi selectedServiceType != null
-                if (selectedServiceType != null)
+                // Service Type Dropdown
+                if (controller.prices.isNotEmpty)
+                  ServiceTypeDropdown(
+                    selectedValue: controller.selectedServiceType,
+                    options: controller.prices.map((e) => e.type).toList(),
+                    onChanged: (value) {
+                      controller.setSelectedServiceType(value);
+                    },
+                  ),
+
+                SizedBox(height: 16),
+
+                // Price List
+                if (controller.selectedPriceData != null)
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.backgroundThird,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primary),
+                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                     ),
                     child: Column(
-                      children: controller.prices
-                          .firstWhere(
-                            (p) => p.type == selectedServiceType,
-                        orElse: () => PriceModel(type: '', category: []),
-                      )
-                          .category
-                          .map((c) => PriceGroupWidget(group: c))
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: controller.selectedPriceData!.category
+                          .map((group) => PriceGroupWidget(group: group))
                           .toList(),
                     ),
                   ),

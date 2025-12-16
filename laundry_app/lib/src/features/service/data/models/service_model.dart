@@ -1,14 +1,11 @@
-class ServiceModel {
-  final String name;
-  final String description;
-  final String icon;
-  final String type; // main / extra
+import 'package:laundry_app/src/features/service/domain/entities/service.dart';
 
+class ServiceModel extends Service {
   ServiceModel({
-    required this.name,
-    required this.description,
-    required this.icon,
-    required this.type,
+    required super.name,
+    required super.description,
+    required super.icon,
+    required super.type,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -20,4 +17,21 @@ class ServiceModel {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'icon': icon,
+      'is_main': type == 'main',
+    };
+  }
+
+  Service toEntity() {
+    return Service(
+      name: name,
+      description: description,
+      icon: icon,
+      type: type,
+    );
+  }
 }
