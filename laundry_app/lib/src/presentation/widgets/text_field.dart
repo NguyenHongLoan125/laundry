@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final void Function(String)? onChanged;
   final TextAlign textAlign;
+  final VoidCallback? onTap;
 
   const CustomTextField({
     super.key,
@@ -19,13 +20,15 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.onChanged,
     this.textAlign = TextAlign.start,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Default Field
     return TextField(
       controller: controller,
+      readOnly: onTap != null,
+      onTap: onTap,
       keyboardType: keyboardType,
       obscureText: obscureText,
       cursorColor: AppColors.primary,
@@ -39,10 +42,7 @@ class CustomTextField extends StatelessWidget {
         labelText: label,
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         prefixIcon: icon != null
-            ? Icon(
-          icon,
-          color: AppColors.textSecondary,
-        )
+            ? Icon(icon, color: AppColors.textSecondary)
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

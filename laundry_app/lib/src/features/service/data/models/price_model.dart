@@ -1,12 +1,10 @@
-class PriceItemModel {
-  final String subname;
-  final int cost;
-  final String? unit;
+import 'package:laundry_app/src/features/service/domain/entities/price.dart';
 
+class PriceItemModel extends PriceItem {
   PriceItemModel({
-    required this.subname,
-    required this.cost,
-    this.unit,
+    required super.subname,
+    required super.cost,
+    super.unit,
   });
 
   factory PriceItemModel.fromJson(Map<String, dynamic> json) {
@@ -16,15 +14,28 @@ class PriceItemModel {
       unit: json['unit'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subname': subname,
+      'cost': cost,
+      'unit': unit,
+    };
+  }
+
+  PriceItem toEntity() {
+    return PriceItem(
+      subname: subname,
+      cost: cost,
+      unit: unit,
+    );
+  }
 }
 
-class PriceCategoryModel {
-  final String name;
-  final List<PriceItemModel> items;
-
+class PriceCategoryModel extends PriceCategory {
   PriceCategoryModel({
-    required this.name,
-    required this.items,
+    required super.name,
+    required super.items,
   });
 
   factory PriceCategoryModel.fromJson(Map<String, dynamic> json) {
@@ -35,15 +46,26 @@ class PriceCategoryModel {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'items': items.map((e) => (e as PriceItemModel).toJson()).toList(),
+    };
+  }
+
+  PriceCategory toEntity() {
+    return PriceCategory(
+      name: name,
+      items: items,
+    );
+  }
 }
 
-class PriceModel {
-  final String type;
-  final List<PriceCategoryModel> category;
-
+class PriceModel extends Price {
   PriceModel({
-    required this.type,
-    required this.category,
+    required super.type,
+    required super.category,
   });
 
   factory PriceModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +74,20 @@ class PriceModel {
       category: (json['types'] as List)
           .map((e) => PriceCategoryModel.fromJson(e))
           .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'service': type,
+      'types': category.map((e) => (e as PriceCategoryModel).toJson()).toList(),
+    };
+  }
+
+  Price toEntity() {
+    return Price(
+      type: type,
+      category: category,
     );
   }
 }

@@ -100,16 +100,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 routeName = RouteNames.home;
                 break;
               case 1:
-                routeName = RouteNames.account;
+                routeName = RouteNames.service;
                 break;
               case 2:
-                routeName = RouteNames.account;
+                routeName = RouteNames.laundryOrder;
                 break;
               case 3:
-                routeName = RouteNames.account;
+                routeName = RouteNames.profile;
                 break;
               case 4:
-                routeName = RouteNames.account;
+                routeName = RouteNames.profile;
                 break;
               default:
               routeName = RouteNames.home;
