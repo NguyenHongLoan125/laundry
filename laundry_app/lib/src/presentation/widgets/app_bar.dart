@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget{
   final String title;
+  final VoidCallback returnArrow;
 
 
   const CustomAppBar({
     super.key,
     required this.title,
+    required this.returnArrow,
   });
 
   @override

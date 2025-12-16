@@ -4,6 +4,8 @@ import 'package:laundry_app/src/presentation/pages/my_laundry_packages_page.dart
 import 'package:laundry_app/src/presentation/pages/order_detail_page.dart';
 import 'package:laundry_app/src/presentation/pages/voucher_list_page.dart';
 import 'package:laundry_app/src/presentation/screens/otp_verification_screen.dart';
+import 'package:laundry_app/src/presentation/screens/auth_screen.dart';
+import 'package:laundry_app/src/presentation/screens/create_order_screen.dart';
 import 'package:laundry_app/src/presentation/screens/register_screen.dart';
 import 'package:laundry_app/src/presentation/screens/service_screen.dart';
 import '../presentation/pages/laundry_order_page.dart';
@@ -30,6 +32,7 @@ class AppRoutes {
   static const rating = RouteNames.rating;
   static const laundryOrder = RouteNames.laundryOrder;
 
+  static const createOrder = RouteNames.createOrder;
 
   static final routes = <String, WidgetBuilder>{
     login: (context) => const LoginScreen(),
@@ -48,5 +51,7 @@ class AppRoutes {
     rating: (context) =>  const ServiceRatingScreen(),
     laundryOrder: (context) =>   LaundryOrderScreen(),
 
+    // account: (context) => const AccountScreen(),
+    createOrder: (context) => CreateOrderScreen(),
   };
 }
