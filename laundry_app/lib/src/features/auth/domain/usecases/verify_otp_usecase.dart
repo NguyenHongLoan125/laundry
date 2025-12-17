@@ -1,3 +1,4 @@
+import 'package:laundry_app/src/features/auth/domain/entities/user.dart';
 import 'package:laundry_app/src/features/auth/domain/repositories/auth_repository.dart';
 
 class VerifyOTPUseCase {
@@ -5,12 +6,12 @@ class VerifyOTPUseCase {
 
   VerifyOTPUseCase(this.repository);
 
-  Future<bool> call(String email, String otp) async {
+  Future<AuthResponse> call(String otp) async {
     if (otp.isEmpty || otp.length != 6) {
-      throw Exception('Mã OTP phải có 6 chữ số');
+      throw Exception('Vui lòng nhập đủ 6 chữ số OTP');
     }
 
-    return await repository.verifyOTP(email, otp);
+    return await repository.verifyOTP(otp);
   }
 }
 
@@ -21,7 +22,7 @@ class ResendOTPUseCase {
 
   Future<bool> call(String email) async {
     if (email.isEmpty) {
-      throw Exception('Email không được để trống');
+      throw Exception('Email không hợp lệ');
     }
 
     return await repository.resendOTP(email);

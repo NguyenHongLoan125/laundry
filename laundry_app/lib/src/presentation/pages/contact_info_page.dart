@@ -28,7 +28,12 @@ class _ContactInfoScreenState extends State<ContactInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFECF2FB),
-      appBar: CustomAppBar(title: "Thông tin liên hệ"),
+      appBar: CustomAppBar(
+        title: "Thông tin liên hệ",
+        returnArrow: () {
+          Navigator.pop(context);
+        },
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

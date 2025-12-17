@@ -7,13 +7,13 @@ class RegisterUseCase {
   RegisterUseCase(this.repository);
 
   Future<AuthResponse> call({
-    required String name,
+    required String fullName,
     required String email,
     required String phone,
     required String password,
   }) async {
     // Validate inputs
-    if (name.isEmpty || email.isEmpty || phone.isEmpty || password.isEmpty) {
+    if (fullName.isEmpty || email.isEmpty || phone.isEmpty || password.isEmpty) {
       throw Exception('Vui lòng điền đầy đủ thông tin');
     }
 
@@ -35,7 +35,7 @@ class RegisterUseCase {
     }
 
     return await repository.register(
-      name: name,
+      fullName: fullName,
       email: email,
       phone: phone,
       password: password,
