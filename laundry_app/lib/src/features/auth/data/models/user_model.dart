@@ -3,18 +3,20 @@ import 'package:laundry_app/src/features/auth/domain/entities/user.dart';
 class UserModel extends User {
   UserModel({
     required super.id,
-    required super.name,
+    required super.fullName,
     required super.email,
     required super.phone,
+    super.image,
     super.token,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] ?? '',
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      fullName: json['fullName'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      image: json['image'],
       token: json['token'],
     );
   }
@@ -22,9 +24,10 @@ class UserModel extends User {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'fullName': fullName,
       'email': email,
       'phone': phone,
+      'image': image,
       'token': token,
     };
   }
@@ -32,9 +35,10 @@ class UserModel extends User {
   User toEntity() {
     return User(
       id: id,
-      name: name,
+      fullName: fullName,
       email: email,
       phone: phone,
+      image: image,
       token: token,
     );
   }
@@ -42,24 +46,27 @@ class UserModel extends User {
 
 class AuthResponseModel extends AuthResponse {
   AuthResponseModel({
-    required super.user,
+    super.user,
     required super.message,
-    required super.success,
+    required super.code,
+    super.otp,
   });
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
-      user: UserModel.fromJson(json['user']),
+      user: json['data'] != null ? UserModel.fromJson(json['data']) : null,
       message: json['message'] ?? '',
-      success: json['success'] ?? false,
+      code: json['code'] ?? 'error',
+      otp: json['otp'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'user': (user as UserModel).toJson(),
+      'data': user != null ? (user as UserModel).toJson() : null,
       'message': message,
-      'success': success,
+      'code': code,
+      'otp': otp,
     };
   }
 
@@ -67,7 +74,8 @@ class AuthResponseModel extends AuthResponse {
     return AuthResponse(
       user: user,
       message: message,
-      success: success,
+      code: code,
+      otp: otp,
     );
   }
 }

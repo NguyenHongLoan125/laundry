@@ -29,6 +29,9 @@ class AuthController extends ChangeNotifier {
   String? _successMessage;
   String? get successMessage => _successMessage;
 
+  String? _currentOTP; // Lưu OTP từ response register
+  String? get currentOTP => _currentOTP;
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -78,7 +81,7 @@ class AuthController extends ChangeNotifier {
 
   // Register
   Future<bool> register({
-    required String name,
+    required String fullName,
     required String email,
     required String phone,
     required String password,
@@ -89,14 +92,14 @@ class AuthController extends ChangeNotifier {
 
     try {
       final response = await registerUseCase.call(
-        name: name,
+        fullName: fullName,
         email: email,
         phone: phone,
         password: password,
       );
 
       if (response.success) {
-        _currentUser = response.user;
+        _currentOTP = response.otp; // Lưu OTP để test
         _setSuccess(response.message);
         _setLoading(false);
         return true;
@@ -113,20 +116,20 @@ class AuthController extends ChangeNotifier {
   }
 
   // Verify OTP
-  Future<bool> verifyOTP(String email, String otp) async {
+  Future<bool> verifyOTP(String otp) async {
     _setLoading(true);
     _setError(null);
     _setSuccess(null);
 
     try {
-      final success = await verifyOTPUseCase.call(email, otp);
+      final response = await verifyOTPUseCase.call(otp);
 
-      if (success) {
-        _setSuccess('Xác thực thành công');
+      if (response.success) {
+        _setSuccess(response.message);
         _setLoading(false);
         return true;
       } else {
-        _setError('Xác thực thất bại');
+        _setError(response.message);
         _setLoading(false);
         return false;
       }
@@ -161,6 +164,7 @@ class AuthController extends ChangeNotifier {
   // Logout
   void logout() {
     _currentUser = null;
+    _currentOTP = null;
     _errorMessage = null;
     _successMessage = null;
     notifyListeners();

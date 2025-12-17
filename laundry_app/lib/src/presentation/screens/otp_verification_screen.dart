@@ -50,7 +50,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     return otpControllers.map((c) => c.text).join();
   }
 
-  Future<void> _handleVerifyOTP(String email) async {
+  Future<void> _handleVerifyOTP() async {
     final controller = context.read<AuthController>();
     final otp = _getOTP();
 
@@ -59,13 +59,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       return;
     }
 
-    final success = await controller.verifyOTP(email, otp);
+    final success = await controller.verifyOTP(otp);
 
     if (!mounted) return;
 
     if (success) {
       _showMessage(controller.successMessage ?? 'Xác thực thành công', false);
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
       _showMessage(controller.errorMessage ?? 'Xác thực thất bại', true);
     }
@@ -80,6 +80,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     if (success) {
       _showMessage(controller.successMessage ?? 'Đã gửi lại mã OTP', false);
+
+      // Show new OTP in development mode
+      if (controller.currentOTP != null) {
+        _showMessage('New OTP: ${controller.currentOTP}', false);
+      }
     } else {
       _showMessage(controller.errorMessage ?? 'Gửi lại OTP thất bại', true);
     }
@@ -151,6 +156,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                         controller: otpControllers[index],
                                         textAlign: TextAlign.center,
                                         keyboardType: TextInputType.number,
+                                        maxLength: 1,
                                         onChanged: (value) {
                                           if (value.length == 1 && index < 5) {
                                             FocusScope.of(context).nextFocus();
@@ -170,7 +176,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                 TextButton(
                                   onPressed: () => _handleResendOTP(email),
                                   child: Text(
-                                    'Gửi lại mã OTP? Còn 60 giây',
+                                    'Gửi lại mã OTP',
                                     style: TextStyle(
                                       color: AppColors.primary,
                                       fontSize: 14,
@@ -189,7 +195,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                 )
                                     : PrimaryButton(
                                   label: "Tiếp tục",
-                                  onPressed: () => _handleVerifyOTP(email),
+                                  onPressed: _handleVerifyOTP,
                                 ),
 
                                 const SizedBox(height: 20),

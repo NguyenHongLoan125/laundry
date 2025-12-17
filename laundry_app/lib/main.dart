@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:laundry_app/src/app.dart';
-import 'package:laundry_app/src/core/di/laundry_injection.dart';
-import 'package:laundry_app/src/presentation/pages/laundry_order_page.dart';
+import 'package:laundry_app/src/core/di/auth_dependency_injection.dart';
 
-void main() {
-  // LaundryDependencyInjection.init();
-  // runApp(
-  //   MaterialApp(
-  //     home: LaundryOrderScreen(),
-  //   ),
-  // );
+Future<void> main() async {
+  // Đảm bảo Flutter đã khởi tạo
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env file
+  await dotenv.load(fileName: ".env");
+
+  // Initialize Auth dependencies
+  AuthDI.init();
+
+  // Chạy app
   runApp(const LaundryApp());
 }
