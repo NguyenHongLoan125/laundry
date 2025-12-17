@@ -10,7 +10,7 @@ class WashingPackage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final washingPackageCardHeight = size.height * 0.3;
+    final washingPackageCardHeight = size.height * 0.40;
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -24,7 +24,7 @@ class WashingPackage extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.text,
-                  fontSize: size.width * 0.06,
+                  fontSize: size.width * 0.05,
                 ),
               ),
               InkWell(
@@ -131,7 +131,7 @@ class PackageCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: (size.width * 0.032).clamp(11.0, 14.0),
                     color: AppColors.textSecondary,
-                    height: 1.3,
+                    // height: 1.3,
                   ),
                 ),
                 SizedBox(height: (size.width * 0.02).clamp(6.0, 10.0)),
@@ -141,7 +141,7 @@ class PackageCard extends StatelessWidget {
                     color: AppColors.textSecondary,
                     fontSize: (size.width * 0.030).clamp(10.5, 13.0),
                     fontStyle: FontStyle.italic,
-                    height: 1.3,
+                    // height: 1.3,
                   ),
                 ),
               ],

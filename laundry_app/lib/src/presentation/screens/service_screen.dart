@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
+import '../../router/route_names.dart';
 import '../controllers/service_controller.dart';
 import 'package:provider/provider.dart';
 import '../widgets/price-item.dart';
@@ -15,6 +16,7 @@ class ServiceScreen extends StatefulWidget {
 }
 
 class _ServiceScreenState extends State<ServiceScreen> {
+  int _currentIndex =1;
   @override
   void initState() {
     super.initState();
@@ -31,6 +33,7 @@ class _ServiceScreenState extends State<ServiceScreen> {
         title: Text('Dịch vụ', style: TextStyle(color: AppColors.textPrimary)),
         backgroundColor: AppColors.backgroundSecondary,
         elevation: 0,
+
       ),
       body: Consumer<ServiceController>(
         builder: (context, controller, child) {
@@ -127,6 +130,69 @@ class _ServiceScreenState extends State<ServiceScreen> {
           );
         },
       ),
+
+      bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            String routeName;
+            switch (index){
+              case 0:
+                routeName = RouteNames.home;
+                break;
+              case 1:
+                routeName = RouteNames.service;
+                break;
+              case 2:
+                routeName = RouteNames.laundryOrder;
+                break;
+              case 3:
+                routeName = RouteNames.profile;
+                break;
+              case 4:
+                routeName = RouteNames.profile;
+                break;
+              default:
+                routeName = RouteNames.home;
+            }
+            if (ModalRoute.of(context)?.settings.name != routeName) {
+              Navigator.pushReplacementNamed(context, routeName);
+            }
+          },
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.text,
+          unselectedItemColor: AppColors.text,
+          backgroundColor: AppColors.backgroundAppBar,
+
+
+          items: [
+            _buildNavItem(Icons.home_outlined, "Trang chủ", 0),
+            _buildNavItem(Icons.grid_view, "Dịch vụ", 1),
+            _buildNavItem(Icons.sticky_note_2_outlined, "Đơn giặt", 2),
+            _buildNavItem(Icons.calendar_month_sharp, "Lịch hẹn", 3),
+            _buildNavItem(Icons.person_pin, "Tài khoản", 4),
+
+          ]
+      ),
+    );
+  }
+  BottomNavigationBarItem _buildNavItem (IconData icon, String label, int index){
+    bool isSelected = _currentIndex == index;
+
+    return BottomNavigationBarItem(
+      label: label,
+      icon: isSelected
+          ? Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Icon(icon, color: Colors.white),
+      )
+          : Icon(icon, color: AppColors.text),
     );
   }
 }

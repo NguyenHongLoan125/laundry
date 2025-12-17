@@ -11,7 +11,7 @@ class RecentOrders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final recentOrderHeight = size.height * 0.16;
+    final recentOrderHeight = size.height * 0.18;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -141,12 +141,12 @@ class CreateOrder extends StatelessWidget {
                   border: Border.all(color: AppColors.textPrimary, width: 2),
                 ),
                 child: CircleAvatar(
-                  radius: size.width * 0.07,
+                  radius: size.width * 0.06,
                   backgroundColor: Colors.white,
                   child: Icon(
                     Icons.add,
                     color: AppColors.textPrimary,
-                    size: size.width * 0.08,
+                    size: size.width * 0.07,
                   ),
                 ),
               ),
@@ -156,7 +156,7 @@ class CreateOrder extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
-                  fontSize: size.height * 0.019,
+                  fontSize: size.height * 0.017,
                 ),
               ),
             ],
@@ -309,15 +309,15 @@ class RecentOrderCard extends StatelessWidget {
                           // Dòng 2: Date
                           Row(
                             children: [
-                               Text(
-                                    dateText,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: colorTextAndStatus,
-                                      fontSize: (size.width * 0.034).clamp(11.0, 14.0),
-                                    ),
-                               ),
+                              Text(
+                                dateText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: colorTextAndStatus,
+                                  fontSize: (size.width * 0.034).clamp(11.0, 14.0),
+                                ),
+                              ),
                             ],
                           ),
 

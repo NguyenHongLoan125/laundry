@@ -71,34 +71,34 @@ class _ContactInfoScreenState extends State<ContactInfoScreen> {
               ),
               const SizedBox(height: 16),
 
-          GestureDetector(
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BeautifulGrabAddressPicker(
-                    initialPosition: currentLatLng,          //  truyền lại vị trí đã chọn
-                    initialAddress: addressController.text,  //  truyền lại địa chỉ đã chọn
+              GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BeautifulGrabAddressPicker(
+                        initialPosition: currentLatLng,          //  truyền lại vị trí đã chọn
+                        initialAddress: addressController.text,  //  truyền lại địa chỉ đã chọn
+                      ),
+                    ),
+                  );
+
+                  if (result != null) {
+                    setState(() {
+                      addressController.text = result["address"];
+                      currentLatLng = LatLng(result["lat"], result["lng"]);
+                    });
+                  }
+                },
+                child: AbsorbPointer(
+                  child: CustomTextField(
+                    controller: addressController,
+                    label: "Địa chỉ",
                   ),
                 ),
-              );
-
-              if (result != null) {
-                setState(() {
-                  addressController.text = result["address"];
-                  currentLatLng = LatLng(result["lat"], result["lng"]);
-                });
-              }
-            },
-            child: AbsorbPointer(
-              child: CustomTextField(
-                controller: addressController,
-                label: "Địa chỉ",
               ),
-            ),
-          ),
 
-          const SizedBox(height: 40),
+              const SizedBox(height: 40),
               PrimaryButton(
                 label: "Lưu thông tin",
                 onPressed: () {},

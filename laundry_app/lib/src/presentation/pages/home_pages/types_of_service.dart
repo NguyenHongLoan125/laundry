@@ -16,11 +16,11 @@ class TypesOfService extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    final cardHeight = size.height * 0.22;
+    final cardHeight = size.height * 0.25;
     final cardWidth = size.width * 0.42;
     final iconSize = size.width * 0.18;
     final spacingTop = size.height * 0.015;
-    final titleFont = size.width * 0.06;
+    final titleFont = size.width * 0.05;
     final itemFont = size.width * 0.048;
     final avatarLetterFont = size.width * 0.09;
 

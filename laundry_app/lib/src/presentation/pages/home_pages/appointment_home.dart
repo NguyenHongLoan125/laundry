@@ -11,10 +11,10 @@ class AppointmentHome extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    final appointmentHeight = size.height*0.2;
+    final appointmentHeight = size.height*0.23;
 
     return Padding(
-        padding: EdgeInsets.all(8),
+      padding: EdgeInsets.all(8),
       child: Column(
         children: [
           Row(
@@ -25,7 +25,7 @@ class AppointmentHome extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.text,
-                  fontSize: size.width*0.06,
+                  fontSize: size.width*0.05,
                 ),
               ),
 
@@ -48,8 +48,8 @@ class AppointmentHome extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15)
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15)
               ),
               height: appointmentHeight,
               child: Padding(
@@ -65,9 +65,9 @@ class AppointmentHome extends StatelessWidget {
                               ? "${appointment.scheduleTime!.hour.toString().padLeft(2, '0')}:${appointment.scheduleTime!.minute.toString().padLeft(2, '0')}"
                               : "16:00",
                           style: TextStyle(
-                             fontSize: size.height*0.025,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600
+                              fontSize: size.height*0.025,
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                         SizedBox(height: size.height*0.001,),
@@ -84,21 +84,21 @@ class AppointmentHome extends StatelessWidget {
                         SizedBox(height: size.height*0.01,),
                         Container(
                           alignment: Alignment.center,
-                            height: size.height*0.05,
-                            decoration: BoxDecoration(
+                          height: size.height*0.05,
+                          decoration: BoxDecoration(
                               color: AppColors.backgroundMain,
                               borderRadius: BorderRadius.circular(16)
-                            ),
-                            child: Padding(
-                                padding: EdgeInsets.all(8),
-                              child: Text(
-                                  'Đã xác nhận',
-                                style: TextStyle(
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              'Đã xác nhận',
+                              style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.textPrimary
-                                ),
                               ),
                             ),
+                          ),
                         )
                       ],
                     ),
@@ -111,9 +111,9 @@ class AppointmentHome extends StatelessWidget {
                         Text(
                           "Mã xác nhận: ${appointment.appointmentId ?? "000000000001"}",
                           style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: size.height*0.016,
-                            fontWeight: FontWeight.w600
+                              color: AppColors.textSecondary,
+                              fontSize: size.height*0.016,
+                              fontWeight: FontWeight.w600
                           ),
                         ),
                         SizedBox(height: size.height*0.001,),
@@ -135,7 +135,7 @@ class AppointmentHome extends StatelessWidget {
                               color: AppColors.textSecondary,
                               fontSize: size.height*0.012,
                               fontWeight: FontWeight.w400,
-                            fontStyle: FontStyle.italic
+                              fontStyle: FontStyle.italic
                           ),
                         )
 
