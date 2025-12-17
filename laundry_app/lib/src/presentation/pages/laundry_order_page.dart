@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_app/src/core/constants/app_colors.dart';
 import 'package:provider/provider.dart';
+import '../../router/app_routes.dart';
 import '../controllers/laundry_order_controller.dart';
 import '../widgets/address_input_widget.dart';
 import '../widgets/package_selector_widget.dart';
@@ -29,7 +31,15 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final provider = context.watch<LaundryOrderProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Đơn giặt")),
+      appBar: AppBar(
+        title: const Text("Đơn giặt"),
+        leading: IconButton(
+            onPressed: (){
+              Navigator.pushNamed(context, AppRoutes.home);
+            },
+            icon: Icon(Icons.arrow_back_ios_new, color: AppColors.text,)
+        ),
+      ),
       body: provider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

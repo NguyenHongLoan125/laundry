@@ -34,7 +34,7 @@ class TypeOfClothes extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.text,
-                  fontSize: 20,
+                  fontSize: size.width*0.05,
                 ),
               ),
             ],
