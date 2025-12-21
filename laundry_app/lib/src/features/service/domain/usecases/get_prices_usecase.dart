@@ -6,7 +6,7 @@ class GetPricesUseCase {
 
   GetPricesUseCase(this.repository);
 
-  Future<List<Price>> call() async {
-    return await repository.getPrices();
+  Future<List<Price>> call(String serviceId) async {
+    return await repository.getPrices(serviceId);
   }
 }

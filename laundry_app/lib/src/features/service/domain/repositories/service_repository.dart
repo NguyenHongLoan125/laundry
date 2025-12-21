@@ -3,5 +3,6 @@ import 'package:laundry_app/src/features/service/domain/entities/service.dart';
 
 abstract class ServiceRepository {
   Future<List<Service>> getServices();
-  Future<List<Price>> getPrices();
+  Future<List<Service>> getExtraServices();
+  Future<List<Price>> getPrices(String serviceId);
 }

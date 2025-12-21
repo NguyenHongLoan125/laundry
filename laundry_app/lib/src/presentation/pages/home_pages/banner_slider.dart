@@ -19,9 +19,7 @@ class BannerSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
-
-    final bannerHeight = size.height * 0.25;
+    final bannerHeight = size.height * 0.22;
 
     if (isLoading) {
       return SizedBox(
@@ -37,12 +35,32 @@ class BannerSlider extends StatelessWidget {
       children: [
         CarouselSlider(
           items: images.map((url) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                url,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      url,
+                      width: double.infinity,
+                      height: bannerHeight,
+                      fit: BoxFit.cover,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.3),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }).toList(),
@@ -50,16 +68,15 @@ class BannerSlider extends StatelessWidget {
             height: bannerHeight,
             autoPlay: true,
             enlargeCenterPage: true,
-            viewportFraction: 0.88,
+            viewportFraction: 0.90,
             autoPlayInterval: const Duration(seconds: 4),
+            autoPlayCurve: Curves.easeInOut,
             onPageChanged: (index, reason) {
               onPageChanged(index);
             },
           ),
         ),
-
-        const SizedBox(height: 12),
-
+        const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: images.asMap().entries.map((entry) {
@@ -67,12 +84,22 @@ class BannerSlider extends StatelessWidget {
 
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: isActive ? 18 : 8,
+              width: isActive ? 24 : 8,
               height: 8,
               decoration: BoxDecoration(
-                color: isActive ? AppColors.text : Colors.grey,
+                color: isActive ? AppColors.primary : Colors.grey[300],
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: isActive
+                    ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+                    : null,
               ),
             );
           }).toList(),

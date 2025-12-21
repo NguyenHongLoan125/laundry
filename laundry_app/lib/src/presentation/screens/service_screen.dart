@@ -4,7 +4,6 @@ import 'package:laundry_app/src/core/constants/app_colors.dart';
 import '../../router/route_names.dart';
 import '../controllers/service_controller.dart';
 import 'package:provider/provider.dart';
-import '../widgets/price-item.dart';
 import '../widgets/service_card.dart';
 import '../widgets/service_type_dropdown.dart';
 
@@ -31,7 +30,7 @@ class _ServiceScreenState extends State<ServiceScreen> {
       backgroundColor: AppColors.backgroundMain,
       appBar: AppBar(
         title: Text('Dịch vụ', style: TextStyle(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: AppColors.backgroundMain,
         elevation: 0,
 
       ),
@@ -79,6 +78,7 @@ class _ServiceScreenState extends State<ServiceScreen> {
                 SizedBox(height: 20),
 
                 // Bảng giá tham khảo
+                // Bảng giá tham khảo
                 Text(
                   'Bảng giá tham khảo',
                   style: TextStyle(
@@ -97,20 +97,31 @@ class _ServiceScreenState extends State<ServiceScreen> {
                 ),
                 SizedBox(height: 16),
 
-                // Service Type Dropdown
-                if (controller.prices.isNotEmpty)
-                  ServiceTypeDropdown(
-                    selectedValue: controller.selectedServiceType,
-                    options: controller.prices.map((e) => e.type).toList(),
-                    onChanged: (value) {
-                      controller.setSelectedServiceType(value);
-                    },
+// Dropdown chọn dịch vụ
+                if (controller.mainServices.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ServiceTypeDropdown(
+                        selectedValue: controller.selectedServiceName ?? '',
+                        options: controller.getServiceNames(),
+                        onChanged: (value) async {
+                          if (value != null && value.isNotEmpty) {
+                            // Tìm service theo tên
+                            final service = controller.getServiceByName(value);
+                            if (service != null && service.id.isNotEmpty) {
+                              await controller.selectService(service.id, service.name);
+                            }
+                          }
+                        },
+                      ),
+                      SizedBox(height: 16),
+                    ],
                   ),
 
-                SizedBox(height: 16),
-
-                // Price List
-                if (controller.selectedPriceData != null)
+// Hiển thị tất cả clothing items của dịch vụ được chọn
+                if (controller.selectedPriceData != null &&
+                    controller.selectedPriceData!.category.isNotEmpty)
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -120,11 +131,57 @@ class _ServiceScreenState extends State<ServiceScreen> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: controller.selectedPriceData!.category
-                          .map((group) => PriceGroupWidget(group: group))
-                          .toList(),
+                      children: [
+                        // Hiển thị TẤT CẢ categories và items của dịch vụ này
+                        ...controller.selectedPriceData!.category.map((category) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                category.name,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              ...category.items.map((item) {
+                                return Container(
+                                  margin: EdgeInsets.only(bottom: 4, left:12),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          item.subname,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        "${item.cost.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ/${item.unit ?? 'kg'}",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                              SizedBox(height: 12),
+                            ],
+                          );
+                        }),
+                      ],
                     ),
-                  ),
+                  )
+                else if (!controller.isLoading)
+                  _buildEmptyPriceWidget(),
               ],
             ),
           );
@@ -195,4 +252,20 @@ class _ServiceScreenState extends State<ServiceScreen> {
           : Icon(icon, color: AppColors.text),
     );
   }
+}
+
+Widget _buildEmptyPriceWidget() {
+  return Container(
+    padding: EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.backgroundThird,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Center(
+      child: Text(
+        'Bảng giá đang được cập nhật',
+        style: TextStyle(color: AppColors.textSecondary),
+      ),
+    ),
+  );
 }

@@ -16,92 +16,48 @@ class TypesOfService extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    final cardHeight = size.height * 0.25;
-    final cardWidth = size.width * 0.42;
-    final iconSize = size.width * 0.18;
-    final spacingTop = size.height * 0.015;
-    final titleFont = size.width * 0.05;
-    final itemFont = size.width * 0.048;
-    final avatarLetterFont = size.width * 0.09;
-
     return Padding(
-      padding: EdgeInsets.all(size.width * 0.04),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Text(
             'Loại dịch vụ',
             style: TextStyle(
-              fontSize: titleFont,
+              fontSize: 18,
               color: AppColors.text,
               fontWeight: FontWeight.bold,
             ),
           ),
-
-          SizedBox(height: size.height * 0.02),
-
+          const SizedBox(height: 16),
           if (isLoading)
             SizedBox(
-              height: size.height * 0.08,
+              height: size.height * 0.15,
               child: const Center(child: CircularProgressIndicator()),
             ),
-
           if (!isLoading && (services == null || services!.isEmpty))
-            const Center(
-              child: Text(
-                'Không có dịch vụ',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  'Không có dịch vụ',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-
           if (!isLoading && services != null && services!.isNotEmpty)
             SizedBox(
-              height: cardHeight,
+              height: 140,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: services!.length,
+                physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final service = services![index];
-
-                  return Container(
-                    width: cardWidth,
-                    margin: EdgeInsets.only(right: size.width * 0.04),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(size.width * 0.04),
-                      border: Border.all(
-                        color: AppColors.textPrimary,
-                        width: size.width * 0.006,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildServiceIcon(
-                          service.iconUrl,
-                          service.name,
-                          iconSize,
-                          avatarLetterFont,
-                        ),
-                        SizedBox(height: spacingTop),
-                        Text(
-                          service.name ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Pacifico',
-                            color: AppColors.textPrimary,
-                            fontSize: itemFont,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+                  return _ServiceCard(service: service, size: size);
                 },
               ),
             )
@@ -109,36 +65,113 @@ class TypesOfService extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildServiceIcon(String? iconUrl, String? name, double size, double letterFont) {
+class _ServiceCard extends StatelessWidget {
+  final ServiceModel service;
+  final Size size;
+
+  const _ServiceCard({required this.service, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 130,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildServiceIcon(
+                  service.iconUrl,
+                  service.name,
+                  60,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  service.name ?? "",
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceIcon(String? iconUrl, String? name, double size) {
     if (iconUrl != null && iconUrl.isNotEmpty) {
-      return Image.network(
-        iconUrl,
+      return Container(
         height: size,
         width: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallbackLetter(name, size, letterFont),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primary.withOpacity(0.1),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Image.network(
+          iconUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => _fallbackIcon(name, size),
+        ),
       );
     } else {
-      return _fallbackLetter(name, size, letterFont);
+      return _fallbackIcon(name, size);
     }
   }
 
-  Widget _fallbackLetter(String? name, double size, double fontSize) {
+  Widget _fallbackIcon(String? name, double size) {
     final letter = (name?.isNotEmpty ?? false)
         ? name!.substring(0, 1).toUpperCase()
         : "?";
 
-    return SizedBox(
+    return Container(
       height: size,
       width: size,
-      child: CircleAvatar(
-        backgroundColor: Colors.blue.shade100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withOpacity(0.8),
+            AppColors.primary,
+          ],
+        ),
+      ),
+      child: Center(
         child: Text(
           letter,
           style: TextStyle(
-            fontSize: fontSize,
-            color: AppColors.textPrimary,
+            fontSize: size * 0.45,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),

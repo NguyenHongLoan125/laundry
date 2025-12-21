@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/features/service/domain/entities/price.dart';
 import 'package:laundry_app/src/features/service/domain/entities/service.dart';
+import 'package:laundry_app/src/features/service/domain/usecases/get_extra_services_usecase.dart';
 import 'package:laundry_app/src/features/service/domain/usecases/get_prices_usecase.dart';
 import 'package:laundry_app/src/features/service/domain/usecases/get_services_usecase.dart';
 
 class ServiceController extends ChangeNotifier {
   final GetServicesUseCase getServicesUseCase;
+  final GetExtraServicesUseCase getExtraServicesUseCase;
   final GetPricesUseCase getPricesUseCase;
 
   ServiceController({
     required this.getServicesUseCase,
+    required this.getExtraServicesUseCase,
     required this.getPricesUseCase,
   });
 
@@ -17,8 +20,9 @@ class ServiceController extends ChangeNotifier {
   List<Service> extraServices = [];
   List<Price> prices = [];
 
-  String? selectedServiceType;
-  Price? selectedPriceData;
+  String? selectedServiceId;      // ID dịch vụ được chọn
+  String? selectedServiceName;    // Tên dịch vụ được chọn (cho dropdown)
+  Price? selectedPriceData;       // Dữ liệu giá của dịch vụ được chọn
 
   bool isLoading = false;
   String? errorMessage;
@@ -29,24 +33,25 @@ class ServiceController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Load services và prices đồng thời
-      final results = await Future.wait([
+      // Load services (chính và phụ) đồng thời
+      final servicesResults = await Future.wait([
         getServicesUseCase.call(),
-        getPricesUseCase.call(),
+        getExtraServicesUseCase.call(),
       ]);
 
-      final allServices = results[0] as List<Service>;
-      final allPrices = results[1] as List<Price>;
+      mainServices = servicesResults[0] as List<Service>;
+      extraServices = servicesResults[1] as List<Service>;
 
-      mainServices = allServices.where((e) => e.type == "main").toList();
-      extraServices = allServices.where((e) => e.type == "extra").toList();
-      prices = allPrices;
+      // Mặc định chọn dịch vụ đầu tiên trong danh sách chính
+      if (mainServices.isNotEmpty) {
+        final firstService = mainServices.first;
+        selectedServiceId = firstService.id;
+        selectedServiceName = firstService.name;
 
-      // Set default selected service type
-      if (prices.isNotEmpty) {
-        selectedServiceType = prices.first.type;
-        selectedPriceData = prices.first;
+        // Load prices cho dịch vụ đầu tiên
+        await _loadPricesForService(firstService.id);
       }
+
     } catch (e) {
       errorMessage = "Lỗi tải dữ liệu: $e";
       print("Error loading data: $e");
@@ -56,14 +61,51 @@ class ServiceController extends ChangeNotifier {
     }
   }
 
-  void setSelectedServiceType(String? type) {
-    if (type != null) {
-      selectedServiceType = type;
-      selectedPriceData = prices.firstWhere(
-            (price) => price.type == type,
-        orElse: () => prices.first,
-      );
-      notifyListeners();
+  // Method để load prices cho một service cụ thể
+  Future<void> _loadPricesForService(String serviceId) async {
+    try {
+      prices = await getPricesUseCase.call(serviceId);
+
+      // Lấy dữ liệu price cho service này
+      if (prices.isNotEmpty) {
+        selectedPriceData = prices.firstWhere(
+              (price) => price.type == serviceId,
+          orElse: () => prices.first,
+        );
+      }
+    } catch (e) {
+      print("Error loading prices for service $serviceId: $e");
+      // Không set error để không làm crash UI
     }
+  }
+
+  // Method để thay đổi dịch vụ được chọn
+  Future<void> selectService(String serviceId, String serviceName) async {
+    selectedServiceId = serviceId;
+    selectedServiceName = serviceName;
+
+    // Load prices cho dịch vụ mới
+    await _loadPricesForService(serviceId);
+
+    notifyListeners();
+  }
+
+  // Getter để lấy danh sách tên dịch vụ cho dropdown
+  List<String> getServiceNames() {
+    return mainServices.map((service) => service.name).toList();
+  }
+
+  // Getter để lấy service theo tên
+  Service? getServiceByName(String name) {
+    return mainServices.firstWhere(
+          (service) => service.name == name,
+      orElse: () => mainServices.isNotEmpty ? mainServices.first : Service(
+        id: '',
+        name: '',
+        description: '',
+        icon: '',
+        type: 'main',
+      ),
+    );
   }
 }

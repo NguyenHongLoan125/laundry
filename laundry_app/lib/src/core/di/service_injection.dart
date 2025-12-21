@@ -1,49 +1,58 @@
-// lib/src/core/di/dependency_injection.dart
-
+import 'package:dio/dio.dart';
 import 'package:laundry_app/src/features/service/data/datasources/service_remote_data_source.dart';
 import 'package:laundry_app/src/features/service/data/repositories/service_repository_impl.dart';
 import 'package:laundry_app/src/features/service/domain/repositories/service_repository.dart';
+import 'package:laundry_app/src/features/service/domain/usecases/get_extra_services_usecase.dart';
 import 'package:laundry_app/src/features/service/domain/usecases/get_prices_usecase.dart';
 import 'package:laundry_app/src/features/service/domain/usecases/get_services_usecase.dart';
 import '../../presentation/controllers/service_controller.dart';
+import '../config/app_config.dart';
 
 class ServiceDI {
-  // Data Sources
-  // CÁCH 1: Sử dụng API thật (uncomment khi có API)
-  // static ServiceRemoteDataSource _remoteDataSource = ServiceRemoteDataSourceImpl();
+  static Dio _createDio() {
+    return Dio(BaseOptions(
+      baseUrl: AppConfig.baseUrl,
+      connectTimeout: AppConfig.connectTimeout,
+      receiveTimeout: AppConfig.receiveTimeout,
+      sendTimeout: AppConfig.sendTimeout,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+  }
 
-  // CÁCH 2: Sử dụng Mock Data (để test)
-  static ServiceRemoteDataSource _remoteDataSource = ServiceMockDataSource();
+  // Data Source với API thật
+  static ServiceRemoteDataSource get _remoteDataSource {
+    return ServiceRemoteDataSourceImpl(dio: _createDio());
+  }
 
   // Repository
-  static ServiceRepository _repository = ServiceRepositoryImpl(
-    remoteDataSource: _remoteDataSource,
-  );
+  static ServiceRepository get _repository {
+    return ServiceRepositoryImpl(
+      remoteDataSource: _remoteDataSource,
+    );
+  }
 
   // Use Cases
-  static GetServicesUseCase _getServicesUseCase = GetServicesUseCase(_repository);
-  static GetPricesUseCase _getPricesUseCase = GetPricesUseCase(_repository);
+  static GetServicesUseCase get _getServicesUseCase {
+    return GetServicesUseCase(_repository);
+  }
+
+  static GetExtraServicesUseCase get _getExtraServicesUseCase {
+    return GetExtraServicesUseCase(_repository);
+  }
+
+  static GetPricesUseCase get _getPricesUseCase {
+    return GetPricesUseCase(_repository);
+  }
 
   // Controller
   static ServiceController getServiceController() {
     return ServiceController(
       getServicesUseCase: _getServicesUseCase,
+      getExtraServicesUseCase: _getExtraServicesUseCase,
       getPricesUseCase: _getPricesUseCase,
     );
-  }
-
-  // Method để chuyển đổi giữa Mock và Real API
-  static void useMockData() {
-    _remoteDataSource = ServiceMockDataSource();
-    _repository = ServiceRepositoryImpl(remoteDataSource: _remoteDataSource);
-    _getServicesUseCase = GetServicesUseCase(_repository);
-    _getPricesUseCase = GetPricesUseCase(_repository);
-  }
-
-  static void useRealAPI() {
-    _remoteDataSource = ServiceRemoteDataSourceImpl();
-    _repository = ServiceRepositoryImpl(remoteDataSource: _remoteDataSource);
-    _getServicesUseCase = GetServicesUseCase(_repository);
-    _getPricesUseCase = GetPricesUseCase(_repository);
   }
 }

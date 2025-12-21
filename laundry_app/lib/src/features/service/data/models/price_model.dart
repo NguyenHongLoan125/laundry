@@ -9,8 +9,8 @@ class PriceItemModel extends PriceItem {
 
   factory PriceItemModel.fromJson(Map<String, dynamic> json) {
     return PriceItemModel(
-      subname: json['subname'],
-      cost: json['cost'],
+      subname: json['subname'] ?? '',
+      cost: json['cost'] ?? 0,
       unit: json['unit'],
     );
   }
@@ -40,10 +40,10 @@ class PriceCategoryModel extends PriceCategory {
 
   factory PriceCategoryModel.fromJson(Map<String, dynamic> json) {
     return PriceCategoryModel(
-      name: json['name'],
-      items: (json['items'] as List)
-          .map((e) => PriceItemModel.fromJson(e))
-          .toList(),
+      name: json['type'] ?? json['name'] ?? '',
+      items: (json['items'] as List?)
+          ?.map((e) => PriceItemModel.fromJson(e))
+          .toList() ?? [],
     );
   }
 
@@ -63,24 +63,31 @@ class PriceCategoryModel extends PriceCategory {
 }
 
 class PriceModel extends Price {
+  final String serviceId;
+
   PriceModel({
+    required this.serviceId,
     required super.type,
     required super.category,
   });
 
-  factory PriceModel.fromJson(Map<String, dynamic> json) {
+  // Factory để tạo PriceModel từ grouped data
+  factory PriceModel.fromGroupedData({
+    required String serviceId,
+    required List<PriceCategory> categories,
+  }) {
     return PriceModel(
-      type: json['service'],
-      category: (json['types'] as List)
-          .map((e) => PriceCategoryModel.fromJson(e))
-          .toList(),
+      serviceId: serviceId,
+      type: serviceId,
+      category: categories,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'service': type,
-      'types': category.map((e) => (e as PriceCategoryModel).toJson()).toList(),
+      'service_id': serviceId,
+      'type': type,
+      'category': category.map((e) => (e as PriceCategoryModel).toJson()).toList(),
     };
   }
 

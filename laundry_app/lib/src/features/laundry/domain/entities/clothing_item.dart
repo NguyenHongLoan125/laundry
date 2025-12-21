@@ -1,10 +1,11 @@
-import '../../domain/entities/clothing_sub_item.dart';
+import 'clothing_sub_item.dart';
+
 class ClothingItem {
   final String id;
   final String name;
   final String icon;
-  final bool isSelected;
-  final bool isExpanded;
+  bool isSelected;
+  bool isExpanded;
   final List<ClothingSubItem> subItems;
 
   ClothingItem({
@@ -13,24 +14,6 @@ class ClothingItem {
     required this.icon,
     this.isSelected = false,
     this.isExpanded = false,
-    this.subItems = const [],
+    required this.subItems,
   });
-
-  ClothingItem copyWith({
-    String? id,
-    String? name,
-    String? icon,
-    bool? isSelected,
-    bool? isExpanded,
-    List<ClothingSubItem>? subItems,
-  }) {
-    return ClothingItem(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      icon: icon ?? this.icon,
-      isSelected: isSelected ?? this.isSelected,
-      isExpanded: isExpanded ?? this.isExpanded,
-      subItems: subItems ?? this.subItems,
-    );
-  }
 }

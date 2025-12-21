@@ -4,17 +4,22 @@ import 'package:laundry_app/src/features/auth/domain/usecases/login_usecase.dart
 import 'package:laundry_app/src/features/auth/domain/usecases/register_usecase.dart';
 import 'package:laundry_app/src/features/auth/domain/usecases/verify_otp_usecase.dart';
 
+import '../../features/auth/domain/repositories/auth_repository.dart';
+
 class AuthController extends ChangeNotifier {
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
   final VerifyOTPUseCase verifyOTPUseCase;
   final ResendOTPUseCase resendOTPUseCase;
+  final AuthRepository authRepository; // Thêm repository để gọi getProfile
 
   AuthController({
     required this.loginUseCase,
     required this.registerUseCase,
     required this.verifyOTPUseCase,
     required this.resendOTPUseCase,
+    required this.authRepository, // Thêm vào constructor
+
   });
 
   User? _currentUser;
@@ -31,6 +36,24 @@ class AuthController extends ChangeNotifier {
 
   String? _currentOTP; // Lưu OTP từ response register
   String? get currentOTP => _currentOTP;
+  // Thêm setter để cho phép set user từ bên ngoài
+  void setCurrentUser(User user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+  // Thêm method restore session
+  Future<void> restoreSession() async {
+    try {
+      print('Attempting to restore user session...');
+      final user = await authRepository.getProfile();
+      _currentUser = user;
+      print('User session restored: ${user.id}');
+      notifyListeners();
+    } catch (e) {
+      print('Failed to restore session: $e');
+      _currentUser = null;
+    }
+  }
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -63,7 +86,26 @@ class AuthController extends ChangeNotifier {
       final response = await loginUseCase.call(email, password);
 
       if (response.success) {
-        _currentUser = response.user;
+        //  Nếu response không có user data, gọi API getProfile
+        if (response.user == null) {
+          try {
+            // Gọi API lấy profile sau khi login thành công
+            final userProfile = await authRepository.getProfile();
+            _currentUser = userProfile;
+          } catch (e) {
+            print('Error getting profile after login: $e');
+            // Tạo user tạm từ email
+            _currentUser = User(
+              id: null, // ID sẽ được lấy từ getProfile sau
+              fullName: email.split('@').first,
+              email: email,
+              phone: '',
+            );
+          }
+        } else {
+          _currentUser = response.user;
+        }
+
         _setSuccess(response.message);
         _setLoading(false);
         return true;
@@ -78,7 +120,6 @@ class AuthController extends ChangeNotifier {
       return false;
     }
   }
-
   // Register
   Future<bool> register({
     required String fullName,

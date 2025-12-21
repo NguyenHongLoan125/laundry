@@ -1,175 +1,170 @@
 import 'package:laundry_app/src/features/service/data/models/price_model.dart';
 import 'package:laundry_app/src/features/service/data/models/service_model.dart';
-// import 'package:dio/dio.dart'; // Uncomment khi dùng API thật
+import 'package:dio/dio.dart';
+
+import '../../domain/entities/price.dart';
 
 abstract class ServiceRemoteDataSource {
   Future<List<ServiceModel>> getServices();
-  Future<List<PriceModel>> getPrices();
+  Future<List<ServiceModel>> getExtraServices();
+  Future<List<Price>> getPrices(String serviceId);
 }
 
-// CÁCH 1: Lấy dữ liệu từ API
 class ServiceRemoteDataSourceImpl implements ServiceRemoteDataSource {
-  // final Dio dio; // Uncomment khi dùng API thật
+  final Dio dio;
 
-  // ServiceRemoteDataSourceImpl({required this.dio});
+  ServiceRemoteDataSourceImpl({required this.dio});
 
   @override
   Future<List<ServiceModel>> getServices() async {
     try {
-      // CÁCH LẤY TỪ API THẬT (Uncomment khi có API):
-      /*
-      final response = await dio.get('/api/services');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => ServiceModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load services');
-      }
-      */
+      final response = await dio.get('/service/listServices');
 
-      // Tạm thời dùng mock data
-      await Future.delayed(Duration(milliseconds: 500));
-      return mockServicesJson
-          .map((e) => ServiceModel.fromJson(e))
-          .toList();
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 'success') {
+          final List<dynamic> data = responseData['data'];
+          return data.map((json) => ServiceModel.fromApiJson(json)).toList();
+        } else {
+          throw Exception('API error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception('Failed to load services: ${response.statusCode}');
+      }
     } catch (e) {
       throw Exception('Error fetching services: $e');
     }
   }
 
   @override
-  Future<List<PriceModel>> getPrices() async {
+  Future<List<ServiceModel>> getExtraServices() async {
     try {
-      // CÁCH LẤY TỪ API THẬT (Uncomment khi có API):
-      /*
-      final response = await dio.get('/api/prices');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => PriceModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load prices');
-      }
-      */
+      final response = await dio.get('/service/listAddServices');
 
-      // Tạm thời dùng mock data
-      await Future.delayed(Duration(milliseconds: 500));
-      return mockPricesJson
-          .map((e) => PriceModel.fromJson(e))
-          .toList();
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 'success') {
+          final List<dynamic> data = responseData['data'];
+          return data.map((json) => ServiceModel.fromApiJson(json)).toList();
+        } else {
+          throw Exception('API error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception('Failed to load extra services: ${response.statusCode}');
+      }
     } catch (e) {
-      throw Exception('Error fetching prices: $e');
+      throw Exception('Error fetching extra services: $e');
     }
   }
-}
-
-// CÁCH 2: Lấy dữ liệu giả (Mock)
-class ServiceMockDataSource implements ServiceRemoteDataSource {
-  @override
-  Future<List<ServiceModel>> getServices() async {
-    await Future.delayed(Duration(milliseconds: 300));
-    return mockServicesJson
-        .map((e) => ServiceModel.fromJson(e))
-        .toList();
-  }
 
   @override
-  Future<List<PriceModel>> getPrices() async {
-    await Future.delayed(Duration(milliseconds: 300));
-    return mockPricesJson
-        .map((e) => PriceModel.fromJson(e))
-        .toList();
+  Future<List<Price>> getPrices(String serviceId) async {
+    try {
+      // Ưu tiên gọi API laundryPackageOrder trước
+      final response = await dio.get('/laundryPackageOrder/$serviceId');
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 'success') {
+          final List<dynamic> data = responseData['data'];
+          return _convertToPrice(serviceId, data, source: 'laundryPackageOrder');
+        } else {
+          throw Exception('API error: ${responseData['message']}');
+        }
+      } else {
+        // Fallback về clothingItem API
+        return await _getClothingItemsFallback(serviceId);
+      }
+    } catch (e) {
+      print("Error calling laundryPackageOrder: $e");
+      // Fallback về clothingItem API
+      return await _getClothingItemsFallback(serviceId);
+    }
+  }
+
+  // Fallback method: gọi API clothingItem
+  Future<List<Price>> _getClothingItemsFallback(String serviceId) async {
+    try {
+      final response = await dio.get('/clothingItem/listClothingItems/$serviceId');
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+
+        if (responseData['code'] == 'success') {
+          final List<dynamic> data = responseData['data'];
+          return _convertToPrice(serviceId, data, source: 'clothingItem');
+        } else {
+          throw Exception('API error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception('Failed to load clothing items: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching clothing items: $e');
+    }
+  }
+
+  // Helper method để convert dữ liệu từ API thành Price object
+  List<Price> _convertToPrice(String serviceId, List<dynamic> data, {required String source}) {
+    // Chuyển đổi List<dynamic> thành List<Map<String, dynamic>>
+    final apiData = data.cast<Map<String, dynamic>>().toList();
+
+    final categories = apiData.map((categoryData) {
+      return PriceCategoryModel(
+        name: _getCategoryName(categoryData, source),
+        items: _getCategoryItems(categoryData, source),
+      );
+    }).toList();
+
+    return [
+      PriceModel.fromGroupedData(
+        serviceId: serviceId,
+        categories: categories,
+      )
+    ];
+  }
+
+  // Helper để lấy category name từ data
+  String _getCategoryName(Map<String, dynamic> categoryData, String source) {
+    if (source == 'laundryPackageOrder') {
+      return categoryData['category_name'] ??
+          categoryData['type'] ??
+          'Loại đồ';
+    } else {
+      return categoryData['type'] ?? 'Loại đồ';
+    }
+  }
+
+  // Helper để lấy category items từ data
+  List<PriceItemModel> _getCategoryItems(Map<String, dynamic> categoryData, String source) {
+    final itemsData = categoryData['items'] as List? ?? [];
+
+    return itemsData.map((itemData) {
+      if (source == 'laundryPackageOrder') {
+        return PriceItemModel(
+          subname: itemData['item_name'] ?? itemData['subname'] ?? '',
+          cost: itemData['price'] ?? itemData['cost'] ?? 0,
+          unit: itemData['unit'] ?? 'kg',
+        );
+      } else {
+        return PriceItemModel(
+          subname: itemData['subname'] ?? '',
+          cost: itemData['cost'] ?? 0,
+          unit: itemData['unit'] ?? 'kg',
+        );
+      }
+    }).toList();
+  }
+
+  // Helper để lấy tên dịch vụ từ serviceId (nếu cần)
+  String _getServiceName(String serviceId) {
+    final serviceMap = {
+      "69443a3bc497e2ae69d227c5": "Giặt sấy",
+      // Thêm các serviceId khác nếu có
+    };
+    return serviceMap[serviceId] ?? "Dịch vụ";
   }
 }
-
-// Mock Data
-const mockServicesJson = [
-  {
-    "id": 1,
-    "name": "Giặt sấy",
-    "description": "Giặt sạch - sấy khô trong 60 phút",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": true
-  },
-  {
-    "id": 2,
-    "name": "Giặt hấp",
-    "description": "Giặt hấp cao cấp cho áo vest, áo dạ",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": true
-  },
-  {
-    "id": 3,
-    "name": "Ủi quần áo",
-    "description": "Ủi thẳng phẳng lì",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": false
-  },
-  {
-    "id": 4,
-    "name": "Tẩy quần áo",
-    "description": "Tẩy quần áo trắng",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": false
-  },
-  {
-    "id": 5,
-    "name": "Vá quần áo",
-    "description": "Vá quần áo",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": false
-  },
-  {
-    "id": 6,
-    "name": "Tẩy quần áo màu",
-    "description": "Tẩy quần áo màu",
-    "icon": "lib/src/assets/images/laundry.png",
-    "is_main": false
-  },
-];
-
-const mockPricesJson = [
-  {
-    "service": "Giặt sấy",
-    "types": [
-      {
-        "name": "Quần áo",
-        "items": [
-          {"subname": "Áo trắng", "cost": 15000, "unit": "kg"},
-          {"subname": "Áo ra màu", "cost": 15000, "unit": "kg"},
-          {"subname": "Áo khoác", "cost": 30000, "unit": "kg"}
-        ]
-      },
-      {
-        "name": "Rèm cửa",
-        "items": [
-          {"subname": "Rèm cửa", "cost": 40000, "unit": "kg"},
-          {"subname": "Thảm", "cost": 20000, "unit": "kg"},
-          {"subname": "Nệm đơn", "cost": 100000, "unit": "cái"},
-          {"subname": "Nệm đôi", "cost": 150000, "unit": "cái"}
-        ]
-      }
-    ]
-  },
-  {
-    "service": "Giặt hấp",
-    "types": [
-      {
-        "name": "Quần áo",
-        "items": [
-          {"subname": "Áo trắng", "cost": 20000, "unit": "kg"},
-          {"subname": "Áo ra màu", "cost": 20000, "unit": "kg"},
-          {"subname": "Áo khoác", "cost": 35000, "unit": "kg"}
-        ]
-      },
-      {
-        "name": "Rèm cửa",
-        "items": [
-          {"subname": "Rèm cửa", "cost": 50000, "unit": "kg"},
-          {"subname": "Thảm", "cost": 25000, "unit": "kg"},
-          {"subname": "Nệm đơn", "cost": 120000, "unit": "cái"},
-          {"subname": "Nệm đôi", "cost": 170000, "unit": "cái"}
-        ]
-      }
-    ]
-  }
-];

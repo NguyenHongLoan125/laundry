@@ -81,7 +81,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthResponseModel> login(String email, String password) async {
     try {
       final response = await dio.post(
-        '/login',
+        '/authentication/login',
         data: {
           'email': email,
           'password': password,
@@ -112,7 +112,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       final response = await dio.post(
-        '/register',
+        '/authentication/register',
         data: {
           'fullName': fullName,
           'email': email,
@@ -135,7 +135,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthResponseModel> verifyOTP(String otp) async {
     try {
       final response = await dio.post(
-        '/otp',
+        '/authentication/otp',
         data: {
           'otp': otp,
         },
@@ -155,7 +155,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<bool> resendOTP(String email) async {
     try {
       final response = await dio.post(
-        '/register',
+        '/authentication/register',
         data: {
           'email': email,
         },
@@ -173,7 +173,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getProfile() async {
     try {
-      final response = await dio.get('/profile');
+      final response = await dio.get('/authentication/profile');
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data['data']);
@@ -214,7 +214,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       final response = await dio.put(
-        '/profile/edit',
+        '/authentication/profile/edit',
         data: formData,
         options: Options(
           contentType: 'multipart/form-data',
@@ -234,7 +234,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<AuthResponseModel> logout() async {
     try {
-      final response = await dio.get('/logout');
+      final response = await dio.get('/authentication/logout');
 
       if (response.statusCode == 200) {
         return AuthResponseModel.fromJson(response.data);
