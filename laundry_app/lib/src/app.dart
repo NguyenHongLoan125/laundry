@@ -28,8 +28,7 @@ class LaundryApp extends StatelessWidget {
         // ChangeNotifierProvider(create: (_) => TrackingInjection.createTrackingControllerWithAPI('https://your-api-url.com',),),
         ChangeNotifierProvider(create: (_) => OrderInjection.createOrderControllerWithMock(),),
         // ChangeNotifierProvider(create: (_) => OrderInjection.createOrderControllerWithAPI('https://your-api-url.com',),),
-        ChangeNotifierProvider(create: (_) =>  LaundryDI.getProvider(),),
-
+        // ChangeNotifierProvider(create: (_) =>  LaundryDI.getProvider(),),
 
     ],
       child: MaterialApp(

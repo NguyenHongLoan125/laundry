@@ -81,10 +81,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     if (success) {
       _showMessage(controller.successMessage ?? 'Đã gửi lại mã OTP', false);
 
-      // Show new OTP in development mode
-      if (controller.currentOTP != null) {
-        _showMessage('New OTP: ${controller.currentOTP}', false);
-      }
     } else {
       _showMessage(controller.errorMessage ?? 'Gửi lại OTP thất bại', true);
     }
@@ -151,12 +147,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                   children: List.generate(6, (index) {
                                     return SizedBox(
                                       width: 48,
-                                      height: 48,
+                                      height: 56,
                                       child: CustomTextField(
                                         controller: otpControllers[index],
                                         textAlign: TextAlign.center,
                                         keyboardType: TextInputType.number,
                                         maxLength: 1,
+
                                         onChanged: (value) {
                                           if (value.length == 1 && index < 5) {
                                             FocusScope.of(context).nextFocus();

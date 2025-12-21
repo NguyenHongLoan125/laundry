@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConfig {
   // Load từ .env file
   static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://localhost:4000/api/client/authentication';
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:4000/api/client';
 
   static String get apiHost =>
       dotenv.env['API_HOST'] ?? 'localhost';
@@ -12,7 +12,7 @@ class AppConfig {
       int.tryParse(dotenv.env['API_PORT'] ?? '4000') ?? 4000;
 
   static String get apiPath =>
-      dotenv.env['API_PATH'] ?? '/api/client/authentication';
+      dotenv.env['API_PATH'] ?? '/api/client';
 
   static String get fullBaseUrl => baseUrl;
 
@@ -49,16 +49,16 @@ class EnvironmentConfig {
     switch (env) {
       case development:
         return dotenv.env['API_BASE_URL'] ??
-            'http://localhost:4000/api/client/authentication';
+            'http://localhost:4000/api/client';
       case staging:
         return dotenv.env['STAGING_API_URL'] ??
-            'https://staging-api.example.com/api/client/authentication';
+            'https://staging-api.example.com/api/client';
       case production:
         return dotenv.env['PROD_API_URL'] ??
-            'https://api.example.com/api/client/authentication';
+            'https://api.example.com/api/client';
       default:
         return dotenv.env['API_BASE_URL'] ??
-            'http://localhost:4000/api/client/authentication';
+            'http://localhost:4000/api/client';
     }
   }
 

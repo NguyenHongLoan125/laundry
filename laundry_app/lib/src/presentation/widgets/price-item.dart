@@ -23,7 +23,7 @@ class PriceGroupWidget extends StatelessWidget {
         SizedBox(height: 8),
         ...group.items.map((item) {
           return Padding(
-            padding: EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: 8, left: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

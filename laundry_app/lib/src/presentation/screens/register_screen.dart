@@ -117,11 +117,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (success) {
       _showMessage(controller.successMessage ?? 'Đăng ký thành công', false);
 
-      // Show OTP trong development mode
-      if (controller.currentOTP != null) {
-        _showMessage('OTP: ${controller.currentOTP}', false);
-      }
-
       // Chuyển sang màn hình OTP
       Navigator.pushReplacementNamed(
         context,

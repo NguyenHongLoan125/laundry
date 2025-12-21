@@ -1,23 +1,15 @@
 class ClothingSubItem {
   final String id;
   final String name;
-  final int quantity;
+  int quantity;
+  final double price;
+  final String serviceId;
 
   ClothingSubItem({
     required this.id,
     required this.name,
     this.quantity = 0,
+    required this.price,
+    required this.serviceId,
   });
-
-  ClothingSubItem copyWith({
-    String? id,
-    String? name,
-    int? quantity,
-  }) {
-    return ClothingSubItem(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      quantity: quantity ?? this.quantity,
-    );
-  }
 }

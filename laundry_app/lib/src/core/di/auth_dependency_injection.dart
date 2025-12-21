@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:laundry_app/src/core/config/app_config.dart';
 import 'package:laundry_app/src/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:laundry_app/src/features/auth/data/repositories/auth_repository_impl.dart';
@@ -9,8 +11,33 @@ import 'package:laundry_app/src/features/auth/domain/usecases/verify_otp_usecase
 import 'package:laundry_app/src/presentation/controllers/auth_controller.dart';
 
 class AuthDI {
-  // Dio Instance với cấu hình từ AppConfig
-  static final Dio _dio = Dio();
+  // CookieJar để lưu cookies
+  static final CookieJar _cookieJar = CookieJar();
+
+  // Dio Instance với CookieManager
+  static final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: AppConfig.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  )..interceptors.addAll([
+    CookieManager(_cookieJar), // Thêm CookieManager
+    LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      requestHeader: true,
+      responseHeader: true,
+      logPrint: (obj) => print('[Auth API] $obj'),
+    ),
+  ]);
+
+  // SINGLETON AuthController instance
+  static AuthController? _authControllerInstance;
 
   // Data Sources
   static late AuthRemoteDataSource _remoteDataSource;
@@ -48,27 +75,67 @@ class AuthDI {
     _verifyOTPUseCase = VerifyOTPUseCase(_repository);
     _resendOTPUseCase = ResendOTPUseCase(_repository);
 
-    _initialized = true;
-  }
-
-  // Controller
-  static AuthController getAuthController() {
-    if (!_initialized) {
-      init();
-    }
-
-    return AuthController(
+    // Khởi tạo AuthController SINGLETON
+    _authControllerInstance = AuthController(
       loginUseCase: _loginUseCase,
       registerUseCase: _registerUseCase,
       verifyOTPUseCase: _verifyOTPUseCase,
       resendOTPUseCase: _resendOTPUseCase,
+      authRepository: _repository,
     );
+
+    _initialized = true;
+  }
+
+  // Trả về SINGLETON AuthController
+  static AuthController getAuthController() {
+    if (!_initialized) {
+      init();
+    }
+    return _authControllerInstance!;
+  }
+
+  // Thêm method để restore user từ storage
+  static Future<void> restoreUserSession() async {
+    try {
+      // Gọi API getProfile để lấy user data từ cookie
+      final userProfile = await _repository.getProfile();
+
+      // Sử dụng public method hoặc setter nếu có
+      // Nếu không có setter, cần thêm vào AuthController
+      _authControllerInstance?.setCurrentUser(userProfile);
+
+      print('User session restored: ${userProfile.id}');
+    } catch (e) {
+      print('No user session to restore: $e');
+    }
+  }
+
+  // Getter cho Dio
+  static Dio get dio {
+    if (!_initialized) {
+      init();
+    }
+    return _dio;
+  }
+
+  // Getter cho CookieJar
+  static CookieJar get cookieJar {
+    return _cookieJar;
+  }
+
+  // Getter cho AuthRepository
+  static AuthRepository get authRepository {
+    if (!_initialized) {
+      init();
+    }
+    return _repository;
   }
 
   // Method để thay đổi environment
   static void setEnvironment(String environment) {
     EnvironmentConfig.setEnvironment(environment);
-    _initialized = false; // Reset để init lại với environment mới
+    _initialized = false;
     init();
   }
 
@@ -83,7 +150,7 @@ class AuthDI {
     _resendOTPUseCase = ResendOTPUseCase(_repository);
   }
 
-  // Method để set custom Dio instance (nếu cần thêm interceptors, etc)
+  // Method để set custom Dio instance
   static void configureDio(Dio customDio) {
     _remoteDataSource = AuthRemoteDataSourceImpl(dio: customDio);
     _repository = AuthRepositoryImpl(remoteDataSource: _remoteDataSource);
@@ -97,5 +164,6 @@ class AuthDI {
   // Reset tất cả
   static void reset() {
     _initialized = false;
+    _cookieJar.deleteAll(); // Xóa cookies khi reset
   }
 }

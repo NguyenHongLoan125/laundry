@@ -1,13 +1,22 @@
-enum ServiceType { washDry, washIron }
+enum LaundryServiceType {
+  washing,
+  dryCleaning,
+  ironing,
+  express,
+}
 
 class LaundryService {
-  final ServiceType type;
+  final String id;
   final String name;
-  final String icon;
+  final LaundryServiceType type;
+  final double basePrice;
+  final String description;
 
-  LaundryService({
-    required this.type,
+  const LaundryService({
+    required this.id,
     required this.name,
-    required this.icon,
+    required this.type,
+    required this.basePrice,
+    required this.description,
   });
 }
