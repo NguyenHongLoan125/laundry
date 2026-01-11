@@ -4,9 +4,7 @@ import '../../domain/repositories/laundry_repository.dart';
 import '../datasources/laundry_remote_data_source.dart';
 import '../datasources/laundry_local_data_source.dart';
 import '../../domain/entities/clothing_item.dart';
-import '../../domain/entities/laundry_package.dart';
 import '../../domain/entities/additional_service.dart';
-import '../../domain/entities/shipping_method.dart';
 import '../../domain/entities/laundry_service.dart';
 
 class LaundryRepositoryImpl implements LaundryRepository {
@@ -19,23 +17,13 @@ class LaundryRepositoryImpl implements LaundryRepository {
   });
 
   @override
-  Future<List<ClothingItem>> getClothingItems(String serviceId) async { // Thêm tham số serviceId
+  Future<List<ClothingItem>> getClothingItems(String serviceId) async {
     return await remoteDataSource.getClothingItems(serviceId);
-  }
-
-  @override
-  Future<List<LaundryPackage>> getAvailablePackages(String userId) async {
-    return await remoteDataSource.getAvailablePackages(userId);
   }
 
   @override
   Future<List<AdditionalService>> getAdditionalServices() async {
     return await remoteDataSource.getAdditionalServices();
-  }
-
-  @override
-  Future<List<ShippingMethod>> getShippingMethods() async {
-    return await remoteDataSource.getShippingMethods();
   }
 
   @override

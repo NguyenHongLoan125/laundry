@@ -41,8 +41,8 @@ class OrderHeaderCard extends StatelessWidget {
                       Text(
                         order.id,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10,
                         ),
                       ),
                       Text(

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:laundry_app/src/presentation/widgets/order_item_card.dart';
 import 'package:laundry_app/src/presentation/widgets/payment_info_card.dart';
@@ -18,6 +19,8 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  final String myFont = 'Pacifico';
+
   @override
   void initState() {
     super.initState();
@@ -40,9 +43,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF00BCD4)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Ưu đãi',
+        title: Text(
+          'Chi tiết đơn hàng',
           style: TextStyle(
+            fontFamily: myFont,
             color: Color(0xFF00BCD4),
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -66,13 +70,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     Text(
                       ctrl.error!,
-                      style: const TextStyle(color: AppColorss.error),
+                      style: TextStyle(fontFamily: myFont, color: AppColorss.error),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ctrl.loadOrder(widget.orderId),
-                      child: const Text('Thử lại'),
+                      child: Text('Thử lại', style: TextStyle(fontFamily: myFont)),
                     ),
                   ],
                 ),
@@ -80,7 +84,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             }
 
             if (ctrl.order == null) {
-              return const Center(child: Text('Không tìm thấy đơn hàng'));
+              return Center(child: Text('Không tìm thấy đơn hàng', style: TextStyle(fontFamily: myFont)));
             }
 
             return Column(
@@ -133,9 +137,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           elevation: 4,
         ),
-        child: const Text(
+        child: Text(
           'Đánh giá',
           style: TextStyle(
+            fontFamily: myFont,
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppColorss.white,

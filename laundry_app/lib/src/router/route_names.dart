@@ -1,4 +1,6 @@
 class RouteNames {
+  static const String mainApp = '/main-app';
+
   static const String auth = '/auth';
   static const String home = '/home';
   static const String profile = '/profile';

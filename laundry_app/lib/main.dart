@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:laundry_app/src/app.dart';
 import 'package:laundry_app/src/core/di/auth_dependency_injection.dart';
-import 'package:laundry_app/src/core/di/laundry_injection.dart';
 
 Future<void> main() async {
-  // Đảm bảo Flutter đã khởi tạo
   WidgetsFlutterBinding.ensureInitialized();
-  // // Khởi tạo tất cả dependencies
-  // setupLaundryDependencies();
 
-  // Load .env file
-  await dotenv.load(fileName: ".env");
+  // 1. Khởi tạo GetStorage
+  await GetStorage.init();
 
-  // Initialize Auth dependencies
-  AuthDI.init();
-  // LaundryDI.init(useMockData: false); // Khởi tạo ở đây
+  // 2. QUAN TRỌNG: Load file .env trước
+  await dotenv.load(fileName: ".env"); // Hoặc .env.dev, .env.prod
 
-  // Chạy app
+  // 3. Khởi tạo AuthDI
+  await AuthDI.init();
+  // 4.  THÊM: Restore session nếu có
+  print(' Attempting to restore session...');
+  await AuthDI.restoreUserSession();
   runApp(const LaundryApp());
 }

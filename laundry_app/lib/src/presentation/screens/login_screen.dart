@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:laundry_app/src/core/constants/app_colors.dart';
 import 'package:laundry_app/src/router/app_routes.dart';
 
+import '../controllers/home_controller.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -32,11 +34,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showMessage(String message, bool isError) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -61,49 +65,90 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+// Chỉ cần sửa hàm _handleLogin() trong login_screen.dart
+
   Future<void> _handleLogin() async {
-    // Validate form trước
+    print('🔵 === BẮT ĐẦU LOGIN ===');
+
     if (!_formKey.currentState!.validate()) {
+      print('❌ Form validation failed');
       return;
     }
 
     final controller = context.read<AuthController>();
 
-    final success = await controller.login(
-      emailController.text.trim(),
-      passwordController.text,
-    );
+    try {
+      final success = await controller.login(
+        emailController.text.trim(),
+        passwordController.text,
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (success) {
-      _showMessage(controller.successMessage ?? 'Đăng nhập thành công', false);
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else {
-      // Hiển thị lỗi từ backend
-      final errorMessage = controller.errorMessage ?? 'Đăng nhập thất bại';
-      _showMessage(errorMessage, true);
+      if (success) {
+        print('✅ Login thành công');
 
-      // Map lỗi vào field tương ứng
-      setState(() {
-        final lowerError = errorMessage.toLowerCase();
-        if (lowerError.contains('email')) {
-          emailError = errorMessage;
-          passwordError = null;
-        } else if (lowerError.contains('mật khẩu') ||
-            lowerError.contains('mat khau') ||
-            lowerError.contains('password')) {
-          passwordError = errorMessage;
-          emailError = null;
-        } else {
-          // Lỗi chung (ví dụ: sai email/password)
-          emailError = null;
-          passwordError = null;
-        }
-      });
+        // ✅ QUAN TRỌNG: Reset và reload HomeController
+        final homeController = Provider.of<HomeController>(
+          context,
+          listen: false,
+        );
+
+        print('🔄 Resetting HomeController...');
+        homeController.clearAllData();
+
+        // Đợi một chút để đảm bảo data đã được clear
+        await Future.delayed(Duration(milliseconds: 300));
+
+        if (!mounted) return;
+
+        // Navigate đến main screen
+        Navigator.pushReplacementNamed(context, AppRoutes.mainApp);
+
+        // Sau khi navigate, reload data mới
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          print('🔄 Reloading HomeController data...');
+          homeController.reloadAllData();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đăng nhập thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        });
+      } else {
+        print('❌ Login failed');
+        final errorMessage = controller.errorMessage ?? 'Đăng nhập thất bại';
+        _showMessage(errorMessage, true);
+
+        setState(() {
+          final lowerError = errorMessage.toLowerCase();
+          if (lowerError.contains('email')) {
+            emailError = errorMessage;
+            passwordError = null;
+          } else if (lowerError.contains('mật khẩu') ||
+              lowerError.contains('mat khau') ||
+              lowerError.contains('password')) {
+            passwordError = errorMessage;
+            emailError = null;
+          } else {
+            emailError = null;
+            passwordError = null;
+          }
+        });
+      }
+    } catch (e, stackTrace) {
+      print('❌ Exception during login: $e');
+      print('📚 Stack trace: $stackTrace');
+
+      if (mounted) {
+        _showMessage('Lỗi không xác định: $e', true);
+      }
     }
-  }
 
+    print('🔵 === KẾT THÚC LOGIN ===');
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: Column(
                                 children: [
-                                  // Email Field - VALIDATE REAL-TIME
+                                  // Email Field
                                   CustomTextField(
                                     controller: emailController,
                                     label: 'Email',
@@ -162,7 +207,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     validator: _validateEmail,
                                     errorText: emailError,
                                     onChanged: (value) {
-                                      // Clear lỗi từ backend khi user nhập
                                       if (emailError != null) {
                                         setState(() {
                                           emailError = null;
@@ -172,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   const SizedBox(height: 16),
 
-                                  // Password Field - VALIDATE REAL-TIME
+                                  // Password Field
                                   CustomTextField(
                                     controller: passwordController,
                                     label: 'Mật khẩu',
@@ -181,7 +225,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     validator: _validatePassword,
                                     errorText: passwordError,
                                     onChanged: (value) {
-                                      // Clear lỗi từ backend khi user nhập
                                       if (passwordError != null) {
                                         setState(() {
                                           passwordError = null;

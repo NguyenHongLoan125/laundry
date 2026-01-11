@@ -1,48 +1,3 @@
-// // lib/src/features/orders/data/datasources/order_remote_data_source.dart
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
-// import '../models/order_model.dart';
-//
-//
-// abstract class OrderRemoteDataSource {
-//   Future<OrderModel> fetchOrderDetail(String orderId);
-//   Future<OrderModel> updateShipping(String orderId, Map<String, dynamic> shippingJson);
-// }
-//
-//
-// class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
-//   final http.Client client;
-//   final String baseUrl;
-//
-//
-//   OrderRemoteDataSourceImpl({required this.client, required this.baseUrl});
-//
-//
-//   @override
-//   Future<OrderModel> fetchOrderDetail(String orderId) async {
-//     final res = await client.get(Uri.parse('$baseUrl/orders/$orderId'));
-//     if (res.statusCode == 200) {
-//       final json = jsonDecode(res.body) as Map<String, dynamic>;
-//       return OrderModel.fromJson(json);
-//     }
-//     throw Exception('Error fetching order');
-//   }
-//
-//
-//   @override
-//   Future<OrderModel> updateShipping(String orderId, Map<String, dynamic> shippingJson) async {
-//     final res = await client.put(
-//       Uri.parse('$baseUrl/orders/$orderId/shipping'),
-//       headers: {'Content-Type': 'application/json'},
-//       body: jsonEncode(shippingJson),
-//     );
-//     if (res.statusCode == 200) {
-//       final json = jsonDecode(res.body) as Map<String, dynamic>;
-//       return OrderModel.fromJson(json);
-//     }
-//     throw Exception('Error updating shipping info');
-//   }
-// }
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -52,7 +7,7 @@ abstract class OrderRemoteDataSource {
   Future<OrderModel> fetchOrderDetail(String orderId);
 }
 
-// ✅ CÁCH 1: API THẬT
+//  CÁCH 1: API THẬT
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   final http.Client client;
   final String baseUrl;

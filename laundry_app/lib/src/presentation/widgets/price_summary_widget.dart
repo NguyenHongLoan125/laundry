@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_app/src/core/constants/app_colors.dart';
-import 'package:google_fonts/google_fonts.dart'; // Nếu cần
 
 class PriceSummaryWidget extends StatelessWidget {
-  final double totalPrice;
+  final double totalPrice; // Chỉ là phí ship
   final bool isSubmitting;
   final bool canSubmit;
   final VoidCallback onSubmit;
@@ -18,6 +16,8 @@ class PriceSummaryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final deliveryFee = totalPrice;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -26,7 +26,7 @@ class PriceSummaryWidget extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: const Offset(0, -5),
           ),
         ],
       ),
@@ -34,6 +34,63 @@ class PriceSummaryWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Thông báo về tiền giặt
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 20, color: Colors.blue[700]),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Tiệm sẽ cân ký và tính tiền khi đưa đồ đến tiệm',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.blue[900],
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Chỉ hiển thị phí vận chuyển nếu > 0
+            if (deliveryFee > 0) ...[
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Phí vận chuyển',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  Text(
+                    '${deliveryFee.toStringAsFixed(0)}đ',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Divider(height: 24, thickness: 1),
+            ],
+
+            if (deliveryFee == 0) ...[
+              SizedBox(height: 16),
+            ],
+
+            // Tổng thanh toán (chỉ phí ship)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -42,81 +99,55 @@ class PriceSummaryWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary, // Sử dụng AppColors.primary
+                    color: Color(0xFF00BFA5),
                   ),
                 ),
                 Text(
-                  '${totalPrice.toStringAsFixed(0)}đ',
+                  deliveryFee > 0 ? '${deliveryFee.toStringAsFixed(0)}đ' : '0đ',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary, // Sử dụng AppColors.primary
+                    color: Color(0xFF00BFA5),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
 
-            // Sử dụng PrimaryButton thay thế
-            PrimaryButton(
-              label: 'Đặt ngay',
-              onPressed: canSubmit && !isSubmitting ? onSubmit : null,
-              isLoading: isSubmitting,
-              backgroundColor: AppColors.primary, // Màu nền
-              textColor: AppColors.textThird, // Màu chữ
+            SizedBox(height: 16),
+
+            // Button đặt đơn
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: canSubmit && !isSubmitting ? onSubmit : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF00BFA5),
+                  disabledBackgroundColor: Colors.grey[300],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: isSubmitting
+                    ? SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+                    : Text(
+                  'Đặt ngay',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// PrimaryButton component (nên đặt trong file riêng)
-class PrimaryButton extends StatelessWidget {
-  final String label;
-  final VoidCallback? onPressed;
-  final bool isLoading;
-  final Color? backgroundColor;
-  final Color? textColor;
-
-  const PrimaryButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.isLoading = false,
-    this.backgroundColor,
-    this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-          height: 22,
-          width: 22,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: Colors.white,
-          ),
-        )
-            : Text(
-          label,
-          style: GoogleFonts.pacifico(
-            fontSize: 18,
-            color: textColor ?? AppColors.textThird,
-          ),
         ),
       ),
     );

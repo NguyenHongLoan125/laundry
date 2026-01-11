@@ -104,6 +104,7 @@ class ServiceController extends ChangeNotifier {
         name: '',
         description: '',
         icon: '',
+        duration: '',
         type: 'main',
       ),
     );

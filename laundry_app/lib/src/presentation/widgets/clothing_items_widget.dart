@@ -86,6 +86,10 @@ class _ClothingItemCard extends StatelessWidget {
     required this.onToggle,
   });
 
+  bool _isImageUrl(String icon) {
+    return icon.startsWith('http://') || icon.startsWith('https://');
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -99,7 +103,7 @@ class _ClothingItemCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Icon circle
+            // Icon circle - FIXED VERSION
             Container(
               width: 40,
               height: 40,
@@ -107,10 +111,56 @@ class _ClothingItemCard extends StatelessWidget {
                 color: const Color(0xFFEAF9F6),
                 shape: BoxShape.circle,
               ),
-              alignment: Alignment.center,
-              child: Text(
-                item.icon,
-                style: const TextStyle(fontSize: 18),
+              child: Container(
+                margin: const EdgeInsets.all(7), // Thay padding bằng margin
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _isImageUrl(item.icon)
+                    ? ClipOval( // Thêm ClipOval để đảm bảo hình tròn
+                  child: Image.network(
+                    item.icon,
+                    fit: BoxFit.cover, // Giữ nguyên tỷ lệ và cover
+                    width: 40, // Fixed width
+                    height: 40, // Fixed height
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                                : null,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  ),
+                )
+                    : Center(
+                  child: Text(
+                    item.icon,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
               ),
             ),
 
@@ -135,7 +185,7 @@ class _ClothingItemCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color:  AppColors.textPrimary,
+                  color: AppColors.textPrimary,
                   width: 2,
                 ),
               ),
@@ -143,7 +193,7 @@ class _ClothingItemCard extends StatelessWidget {
                   ? const Center(
                 child: CircleAvatar(
                   radius: 5,
-                  backgroundColor:  AppColors.textPrimary,
+                  backgroundColor: AppColors.textPrimary,
                 ),
               )
                   : null,
@@ -154,7 +204,6 @@ class _ClothingItemCard extends StatelessWidget {
     );
   }
 }
-
 class _SubItemRow extends StatelessWidget {
   final ClothingSubItem subItem;
   final Function(int) onUpdateQuantity;
@@ -241,7 +290,7 @@ class _QtyButton extends StatelessWidget {
             width: 1.5,
             color: enabled
                 ?AppColors.textPrimary
-            : Colors.grey.shade300,
+                : Colors.grey.shade300,
           ),
         ),
         child: Icon(

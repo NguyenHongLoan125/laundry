@@ -7,16 +7,12 @@ import '../../domain/entities/clothing_item.dart';
 import '../../domain/entities/clothing_sub_item.dart';
 import '../../domain/entities/detergent_item.dart';
 import '../../domain/entities/fabric_softener_item.dart';
-import '../../domain/entities/laundry_package.dart';
-import '../../domain/entities/shipping_method.dart';
 import '../../domain/entities/laundry_service.dart';
 import '../../domain/entities/laundry_service.dart' as entities;
 
 abstract class LaundryRemoteDataSource {
-  Future<List<ClothingItem>> getClothingItems(String serviceId); // Thêm tham số serviceId
-  Future<List<LaundryPackage>> getAvailablePackages(String userId);
+  Future<List<ClothingItem>> getClothingItems(String serviceId);
   Future<List<AdditionalService>> getAdditionalServices();
-  Future<List<ShippingMethod>> getShippingMethods();
   Future<List<Detergent>> getDetergents();
   Future<List<FabricSoftener>> getFabricSofteners();
   Future<List<LaundryService>> getLaundryServices();
@@ -35,7 +31,6 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
 
   void _configureDio() {
     if (dio == null) return;
-    // print('[Laundry API] ========= CONFIGURING DIO =========');
     dio!.options.baseUrl = EnvironmentConfig.getBaseUrl();
     dio!.options.connectTimeout = const Duration(seconds: 30);
     dio!.options.receiveTimeout = const Duration(seconds: 30);
@@ -49,26 +44,17 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
     dio!.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // print('[Laundry API]  Sending ${options.method} request to: ${options.baseUrl}${options.path}');
-          // print('[Laundry API] Headers: ${options.headers}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          // print('[Laundry API] Received response from: ${response.realUri}');
-          // print('[Laundry API] Status: ${response.statusCode}');
-          // print('[Laundry API] Data: ${response.data}');
           return handler.next(response);
         },
         onError: (error, handler) {
-          // print('[Laundry API]  Error: ${error.message}');
-          // print('[Laundry API] Error type: ${error.type}');
-          // print('[Laundry API] Stack trace: ${error.stackTrace}');
           return handler.next(error);
         },
       ),
     );
 
-    // Giữ lại LogInterceptor
     dio!.interceptors.add(
       LogInterceptor(
         request: true,
@@ -143,10 +129,16 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
         }
 
         return servicesData.map((json) {
+          // Lấy image URL từ backend (ưu tiên image, sau đó icon)
+          String iconUrl = json['image'] ?? json['icon'] ?? '';
+
+          // URL từ Cloudinary đã là full URL
+          print('[Additional Services] Service: ${json['service_name']}, Image URL: $iconUrl');
+
           return AdditionalService(
             id: json['_id'] ?? '',
             name: json['service_name'] ?? '',
-            icon: _mapServiceIcon(json['service_name'] ?? ''),
+            icon: iconUrl.isNotEmpty ? iconUrl : _mapServiceIcon(json['service_name'] ?? ''),
             isSelected: false,
           );
         }).toList();
@@ -265,8 +257,7 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
       // Sử dụng endpoint mới với serviceId
       final response = await dio!.get('/clothingItem/listClothingItems/$serviceId');
 
-      // print('[Clothing Items] Response: ${response.data}');
-      // print('[Clothing Items] Service ID: $serviceId');
+      print('[Clothing Items] Response: ${response.data}');
 
       if (response.statusCode == 200 && response.data['code'] == 'success') {
         final List<dynamic> itemsData = response.data['data'] as List<dynamic>;
@@ -277,6 +268,12 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
 
         return itemsData.map((json) {
           final type = json['type'] ?? '';
+
+          // Lấy image URL từ backend (ưu tiên image, sau đó icon)
+          String iconUrl = json['image'] ?? json['icon'] ?? '';
+
+          // URL từ Cloudinary đã là full URL, không cần thêm base URL
+          print('[Clothing Items] Type: $type, Image URL: $iconUrl');
 
           final List<dynamic> itemsList = json['items'] as List<dynamic>? ?? [];
 
@@ -295,7 +292,7 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
           return ClothingItem(
             id: json['_id'] ?? '',
             name: type,
-            icon: _mapClothingIcon(type), // Map icon dựa trên type, do chưa có icon
+            icon: iconUrl.isNotEmpty ? iconUrl : _mapClothingIcon(type), // Ưu tiên icon từ backend
             isSelected: false,
             isExpanded: false,
             subItems: subItems,
@@ -315,7 +312,8 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
       rethrow;
     }
   }
-// Helper: Map clothing type to icon
+
+  // Helper: Map clothing type to icon (fallback nếu backend không có icon)
   String _mapClothingIcon(String type) {
     final lowerType = type.toLowerCase();
 
@@ -394,175 +392,6 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
   }
 
   @override
-  Future<List<LaundryPackage>> getAvailablePackages(String userId) async {
-    if (dio == null) {
-      throw Exception('Dio is not initialized. Cannot load laundry packages.');
-    }
-
-    try {
-      // print('[Laundry Packages] ========= START =========');
-      // print('[Laundry Packages] UserId: $userId');
-
-      // SỬA: Gọi endpoint lấy ORDERS của user
-      final response = await dio!.get('/laundryPackageOrder/$userId');
-
-      print('[Laundry Packages] Response status: ${response.statusCode}');
-      print('[Laundry Packages] Response data type: ${response.data.runtimeType}');
-
-      if (response.statusCode == 200) {
-        final responseData = response.data;
-
-        // Kiểm tra cấu trúc response
-        if (responseData is! Map<String, dynamic>) {
-          print('[Laundry Packages]  Response is not a Map');
-          throw Exception('Invalid response format');
-        }
-
-        // Lấy data array
-        final List<dynamic> ordersData = responseData['data'] as List<dynamic>;
-        print('[Laundry Packages] Found ${ordersData.length} orders');
-
-        if (ordersData.isEmpty) {
-          print('[Laundry Packages]  User has no orders');
-          return []; // Trả về list rỗng nếu user chưa có order nào
-        }
-
-        // Lọc ra các package duy nhất từ orders (tránh trùng lặp)
-        final Map<String, LaundryPackage> uniquePackages = {};
-
-        for (final order in ordersData) {
-          if (order is Map<String, dynamic>) {
-            final packageData = order['laundry_package_id'];
-
-            if (packageData != null && packageData is Map<String, dynamic>) {
-              final packageId = packageData['_id']?.toString() ?? packageData['id']?.toString();
-
-              if (packageId != null && !uniquePackages.containsKey(packageId)) {
-                // Parse expiry_date từ package
-                DateTime? expiryDate;
-                if (packageData['expiry_date'] != null) {
-                  try {
-                    expiryDate = DateTime.parse(packageData['expiry_date'].toString());
-                  } catch (e) {
-                    print('[Laundry Packages] Error parsing expiry_date: $e');
-                  }
-                }
-
-                // Parse expiry_date từ order (nếu package không có)
-                if (expiryDate == null && order['pickup_date'] != null) {
-                  try {
-                    final orderDate = DateTime.parse(order['pickup_date'].toString());
-                    // Thêm 30 ngày từ ngày pickup
-                    expiryDate = orderDate.add(const Duration(days: 30));
-                  } catch (e) {
-                    print('[Laundry Packages] Error parsing pickup_date: $e');
-                  }
-                }
-
-                // Kiểm tra trạng thái order
-                final orderStatus = order['status']?.toString() ?? 'pending';
-                final isActive = orderStatus != 'cancelled' && orderStatus != 'completed';
-
-                final package = LaundryPackage(
-                  id: packageId,
-                  name: packageData['name']?.toString() ?? 'Unknown Package',
-                  description: packageData['description']?.toString() ?? '',
-                  price: (packageData['price'] as num?)?.toDouble() ?? 0.0,
-                  expiryDate: expiryDate ?? DateTime.now().add(const Duration(days: 30)),
-                  discountPercent: (packageData['discount_percent'] as num?)?.toDouble() ?? 0.0,
-                  isActive: isActive,
-                );
-
-                uniquePackages[packageId] = package;
-                print('[Laundry Packages] Added package: ${package.name} (Active: $isActive)');
-              }
-            }
-          }
-        }
-
-        final packagesList = uniquePackages.values.toList();
-        print('[Laundry Packages] Total unique packages: ${packagesList.length}');
-
-        return packagesList;
-      }
-
-      throw Exception('Failed to load laundry packages: ${response.statusCode}');
-    } on DioException catch (e) {
-      print('[Laundry Packages] DioException: ${e.message}');
-      print('[Laundry Packages] Error type: ${e.type}');
-
-      if (e.response != null) {
-        print('[Laundry Packages] Response status: ${e.response!.statusCode}');
-        print('[Laundry Packages] Response data: ${e.response!.data}');
-
-        final errorData = e.response!.data;
-        if (errorData is Map<String, dynamic>) {
-          throw Exception(errorData['message'] ?? 'Lỗi tải danh sách gói giặt');
-        }
-      }
-
-      // Nếu có lỗi, trả về mock data cho packages user đã mua
-      print('[Laundry Packages]  Returning mock packages for user: $userId');
-      return _getMockPackagesForUser(userId);
-
-    } catch (e, stackTrace) {
-      print('[Laundry Packages] Unexpected error: $e');
-      print('[Laundry Packages] Stack trace: $stackTrace');
-
-      // Trả về mock data
-      return _getMockPackagesForUser(userId);
-    }
-  }
-
-// Mock data dựa trên response bạn có
-  List<LaundryPackage> _getMockPackagesForUser(String userId) {
-    print('[Laundry Packages]  Generating mock packages for user: $userId');
-
-    return [
-      LaundryPackage(
-        id: '6946f8cd91621efddeff5831', // pkg_10kg
-        name: 'Gói 440kg',
-        description: 'Giặt - sấy khô - gấp gọn. Phù hợp nhu cầu giặt hằng tuần. Lưu ý: Không áp dụng cho chăn mền lớn.',
-        price: 249000.0,
-        expiryDate: DateTime.parse('2025-12-31T00:00:00.000Z'),
-        discountPercent: 0.0,
-        isActive: true, // pending order
-      ),
-      LaundryPackage(
-        id: '6946f84691621efddeff582b', // pkg_40kg
-        name: 'Gói giặt sấy 40kg',
-        description: 'Sử dụng dòng máy giặt dân sinh cao cấp. Đồ sau khi giặt xong được sấy khô, diệt khuẩn và gấp gọn. Giặt riêng mỗi khách một máy.',
-        price: 699000.0,
-        expiryDate: DateTime.parse('2025-12-31T00:00:00.000Z'),
-        discountPercent: 20.0,
-        isActive: true, // pending order
-      ),
-    ];
-  }
-  @override
-  Future<List<ShippingMethod>> getShippingMethods() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return [
-      ShippingMethod(
-        id: '1',
-        name: 'Tự giao nhận',
-        description: 'Tự giao đồ tại cửa hàng và nhận lại',
-        originalPrice: 0,
-        discountedPrice: 0,
-      ),
-      ShippingMethod(
-        id: '2',
-        name: 'Giao nhận tận nơi',
-        description: 'Nhân viên đến lấy đồ và giao lại tận nơi',
-        originalPrice: 20000,
-        discountedPrice: 0,
-        voucherInfo: 'Miễn phí vận chuyển',
-      ),
-    ];
-  }
-
-
-  @override
   Future<String> submitOrder(Map<String, dynamic> orderData) async {
     if (dio == null) {
       throw Exception('Dio is not initialized. Cannot submit order to API.');
@@ -605,7 +434,6 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
     }
   }
 
-
   @override
   Future<List<Map<String, dynamic>>> getOrdersByUserId(String userId) async {
     try {
@@ -614,16 +442,16 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
       });
 
       if (response.statusCode == 200) {
-        // Xử lý response theo cấu trúc API của bạn
         return (response.data as List).cast<Map<String, dynamic>>();
       } else {
         throw Exception('Lấy danh sách đơn hàng thất bại');
       }
     } on DioException catch (e) {
-      // Xử lý lỗi
       throw Exception('Lỗi khi lấy đơn hàng: ${e.message}');
     }
   }
+
+
   Map<String, dynamic> _convertToBackendFormat(Map<String, dynamic> orderData) {
     final clothingItems = orderData['clothingItems'] as List<dynamic>? ?? [];
     final items = <Map<String, dynamic>>[];
@@ -661,9 +489,6 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
       }
     }
 
-    final packageData = orderData['package'] as Map<String, dynamic>?;
-    final packageName = packageData?['name'] ?? '';
-
     final serviceData = orderData['service'] as Map<String, dynamic>?;
     final serviceName = serviceData?['name'] ?? '';
 
@@ -673,22 +498,27 @@ class LaundryRemoteDataSourceImpl implements LaundryRemoteDataSource {
     final fabricSoftenerData = orderData['fabricSoftener'] as Map<String, dynamic>?;
     final softenerName = fabricSoftenerData?['name'] ?? '';
 
-    final shippingMethodData = orderData['shippingMethod'] as Map<String, dynamic>?;
-    final deliveryMethod = shippingMethodData?['name'] ?? '';
+    // Lấy thông tin delivery method từ orderData
+    final deliveryMethodData = orderData['deliveryMethod'] as Map<String, dynamic>?;
+    final deliveryMethodName = deliveryMethodData?['name'] ?? 'Giao nhận tận nơi';
 
     return {
       'address': orderData['address'] ?? '',
-      'pakage': packageName,
+      'pakage': '', // Bỏ gói giặt
       'service': serviceName,
       'items': items,
       'washingLiquid': detergentName,
       'softener': softenerName,
       'otherService': otherServices,
-      'deliveryMethod': deliveryMethod,
+      'deliveryMethod': deliveryMethodName, // Sử dụng tên delivery method thực tế
       'note': orderData['notes'] ?? '',
-      'voucher': orderData['appliedDiscount']?['code'] ?? '',
-      'payment': orderData['paymentMethod'] ?? 'cashOnDelivery',
+      'voucher': '', // Bỏ voucher
+      'payment': 'cashOnDelivery', // Chỉ COD
       'total': orderData['totalPrice']?.toString() ?? '0',
+
+      // THÊM CÁC FIELD STATUS
+      'status': orderData['status'] ?? 'chờ duyệt',
+      'statusText': orderData['statusText'] ?? 'Chờ duyệt',
+      'createdAt': orderData['createdAt'] ?? DateTime.now().toIso8601String(),
     };
-  }
-}
+  }}

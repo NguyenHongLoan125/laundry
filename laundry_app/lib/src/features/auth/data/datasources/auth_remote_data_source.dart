@@ -76,7 +76,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       ),
     );
   }
-
+  // Trong auth_remote_data_source.dart, sửa phương thức login():
   @override
   Future<AuthResponseModel> login(String email, String password) async {
     try {
@@ -89,9 +89,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
+        print('✅ Login response FULL: ${response.data}'); // DEBUG
+        print('✅ Response headers: ${response.headers}'); // DEBUG
+        print('✅ Cookies: ${response.headers['set-cookie']}'); // DEBUG
+
         final cookies = response.headers['set-cookie'];
         if (cookies != null && AppConfig.enableLogging) {
-          print('Cookies received: $cookies');
+          print('🍪 Cookies received: $cookies');
         }
 
         return AuthResponseModel.fromJson(response.data);
@@ -99,9 +103,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw Exception('Đăng nhập thất bại');
       }
     } on DioException catch (e) {
+      print('❌ Login error: ${e.response?.data}'); // DEBUG
       return _handleDioError(e, 'Đăng nhập thất bại');
     }
   }
+  // @override
+  // Future<AuthResponseModel> login(String email, String password) async {
+  //   try {
+  //     final response = await dio.post(
+  //       '/authentication/login',
+  //       data: {
+  //         'email': email,
+  //         'password': password,
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final cookies = response.headers['set-cookie'];
+  //       if (cookies != null && AppConfig.enableLogging) {
+  //         print('Cookies received: $cookies');
+  //       }
+  //
+  //       return AuthResponseModel.fromJson(response.data);
+  //     } else {
+  //       throw Exception('Đăng nhập thất bại');
+  //     }
+  //   } on DioException catch (e) {
+  //     return _handleDioError(e, 'Đăng nhập thất bại');
+  //   }
+  // }
 
   @override
   Future<AuthResponseModel> register({

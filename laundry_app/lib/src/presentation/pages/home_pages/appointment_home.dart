@@ -13,7 +13,6 @@ class AppointmentHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),

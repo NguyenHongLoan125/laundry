@@ -3,17 +3,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/di/laundry_injection.dart';
-import '../../router/route_names.dart';
 import '../controllers/laundry_order_controller.dart';
+import '../widgets/delivery_method_widget.dart';
 import '../widgets/generic_selector_widget.dart';
-import '../widgets/package_selector_widget.dart';
 import '../widgets/service_selector_widget.dart';
 import '../widgets/clothing_items_widget.dart';
 import '../widgets/additional_services_widget.dart';
-import '../widgets/shipping_method_widget.dart';
 import '../widgets/notes_widget.dart';
-import '../widgets/discount_code_widget.dart';
-import '../widgets/payment_method_widget.dart';
 import '../widgets/price_summary_widget.dart';
 import '../widgets/text_field.dart';
 import 'address_picker_page.dart';
@@ -28,13 +24,12 @@ class LaundryOrderScreen extends StatefulWidget {
 class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   LatLng? _currentLatLng;
   late LaundryOrderController _orderController;
+  final String myFont = 'Pacifico';
 
   @override
   void initState() {
     super.initState();
-    // Tạo controller từ LaundryOrderDI
     _orderController = LaundryOrderDI.getLaundryOrderController();
-    // Load data ngay sau khi tạo controller
     _loadInitialData();
   }
 
@@ -66,9 +61,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             icon: const Icon(Icons.arrow_back, color: Color(0xFF00BFA5)),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
+          title: Text(
             'Đơn giặt',
             style: TextStyle(
+              fontFamily: myFont,
               color: Color(0xFF00BFA5),
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -78,19 +74,18 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
         ),
         body: Consumer<LaundryOrderController>(
           builder: (context, provider, child) {
-              // Kiểm tra user đã đăng nhập chưa
             if (!provider.isUserLoggedIn) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Vui lòng đăng nhập để đặt đơn'),
+                    Text('Vui lòng đăng nhập để đặt đơn', style: TextStyle(fontFamily: myFont)),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/login');
                       },
-                      child: Text('Đăng nhập'),
+                      child: Text('Đăng nhập', style: TextStyle(fontFamily: myFont)),
                     ),
                   ],
                 ),
@@ -111,16 +106,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Hiển thị thông tin user
-                        // Card(
-                        //   child: ListTile(
-                        //     leading: Icon(Icons.person, color: Color(0xFF00BFA5)),
-                        //     title: Text(provider.authController.currentUser?.fullName ?? ''),
-                        //     subtitle: Text('Chúc bạn có một trải nghiệm tuyệt vời'),
-                        //   ),
-                        // ),
-                        // const SizedBox(height: 16),
-
                         // Địa chỉ
                         GestureDetector(
                           onTap: () async {
@@ -154,19 +139,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // ... các widget khác giữ nguyên ...
-                        // Gói giặt
-                        _buildSection(
-                          'Gói giặt',
-                          PackageSelectorWidget(
-                            packages: provider.packages,
-                            selectedPackage: provider.selectedPackage,
-                            usePackage: provider.usePackage,
-                            onTogglePackage: provider.togglePackageUsage,
-                            onSelectPackage: provider.selectPackage,
-                          ),
-                        ),
-
                         // Loại dịch vụ
                         _buildSection(
                           'Loại dịch vụ',
@@ -174,15 +146,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             services: provider.laundryServices,
                             selectedService: provider.selectedService,
                             onServiceSelected: provider.selectService,
-                          ),
-                        ),
-
-                        // Dịch vụ đi kèm
-                        _buildSection(
-                          'Dịch vụ đi kèm',
-                          AdditionalServicesWidget(
-                            services: provider.additionalServices,
-                            onToggle: provider.toggleAdditionalService,
                           ),
                         ),
 
@@ -194,6 +157,15 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             onToggleItem: provider.toggleClothingItem,
                             onToggleItemExpansion: provider.toggleClothingItemExpansion,
                             onUpdateQuantity: provider.updateSubItemQuantity,
+                          ),
+                        ),
+
+                        // Dịch vụ đi kèm
+                        _buildSection(
+                          'Dịch vụ đi kèm',
+                          AdditionalServicesWidget(
+                            services: provider.additionalServices,
+                            onToggle: provider.toggleAdditionalService,
                           ),
                         ),
 
@@ -227,15 +199,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                           ),
                         ),
 
-                        // Phương thức vận chuyển
+                        // PHƯƠNG THỨC VẬN CHUYỂN - ĐẶT Ở ĐÂY
                         _buildSection(
                           'Phương thức vận chuyển',
-                          ShippingMethodWidget(
-                            shippingMethods: provider.shippingMethods,
-                            selectedMethod: provider.selectedShippingMethod,
-                            onSelectMethod: provider.selectShippingMethod,
-                            onPickupDateChanged: provider.setPickupDate,
-                            onDeliveryDateChanged: provider.setDeliveryDate,
+                          DeliveryMethodWidget(
+                            methods: provider.deliveryMethods,
+                            onMethodSelected: provider.selectDeliveryMethod,
+                            myFont: myFont,
                           ),
                         ),
 
@@ -245,23 +215,58 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                           NotesWidget(controller: provider.notesController),
                         ),
 
-                        // Mã giảm giá
-                        _buildSection(
-                          '',
-                          DiscountCodeWidget(
-                            appliedDiscount: provider.appliedDiscount,
-                            onOpenDiscountPage: () {
-                              Navigator.pushNamed(context, RouteNames.myVoucher);
-                            },
-                          ),
-                        ),
-
-                        // Phương thức thanh toán
+                        // Thông tin thanh toán COD
                         _buildSection(
                           'Phương thức thanh toán',
-                          PaymentMethodWidget(
-                            selectedMethod: provider.selectedPaymentMethod,
-                            onSelectMethod: provider.selectPaymentMethod,
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Color(0xFF00BFA5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.payments_outlined,
+                                  color: Color(0xFF00BFA5),
+                                  size: 24,
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Thanh toán khi nhận hàng (COD)',
+                                        style: TextStyle(
+                                          fontFamily: myFont,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF00BFA5),
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Thanh toán bằng tiền mặt khi nhận đồ',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFF00BFA5),
+                                  size: 24,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -293,7 +298,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
           if (title.isNotEmpty) ...[
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
+                fontFamily: myFont,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF00BFA5),
