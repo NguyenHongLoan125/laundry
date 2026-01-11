@@ -1,4 +1,3 @@
-// Option 2: Thay đổi interface để chỉ làm việc với models
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';

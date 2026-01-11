@@ -1,6 +1,9 @@
+// auth_dependency_injection.dart - FIXED VERSION with PROPER LOGOUT
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:laundry_app/src/core/config/app_config.dart';
 import 'package:laundry_app/src/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:laundry_app/src/features/auth/data/repositories/auth_repository_impl.dart';
@@ -9,73 +12,76 @@ import 'package:laundry_app/src/features/auth/domain/usecases/login_usecase.dart
 import 'package:laundry_app/src/features/auth/domain/usecases/register_usecase.dart';
 import 'package:laundry_app/src/features/auth/domain/usecases/verify_otp_usecase.dart';
 import 'package:laundry_app/src/presentation/controllers/auth_controller.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AuthDI {
-  // CookieJar để lưu cookies
-  static final CookieJar _cookieJar = CookieJar();
-
-  // Dio Instance với CookieManager
-  static final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: AppConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ),
-  )..interceptors.addAll([
-    CookieManager(_cookieJar), // Thêm CookieManager
-    LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      requestHeader: true,
-      responseHeader: true,
-      logPrint: (obj) => print('[Auth API] $obj'),
-    ),
-  ]);
-
-  // SINGLETON AuthController instance
+  static PersistCookieJar? _cookieJar;
   static AuthController? _authControllerInstance;
-
-  // Data Sources
-  static late AuthRemoteDataSource _remoteDataSource;
-
-  // Repository
-  static late AuthRepository _repository;
-
-  // Use Cases
-  static late LoginUseCase _loginUseCase;
-  static late RegisterUseCase _registerUseCase;
-  static late VerifyOTPUseCase _verifyOTPUseCase;
-  static late ResendOTPUseCase _resendOTPUseCase;
-
-  // Initialize flag
   static bool _initialized = false;
+  static Dio? _dio;
 
-  // Initialize tất cả dependencies
-  static void init({String? customBaseUrl}) {
-    if (_initialized) return;
+  static Future<void> init({String? customBaseUrl}) async {
+    if (_initialized) {
+      print('⚠️ Re-initializing after hot restart...');
+      _initialized = false;
+      _cookieJar = null;
+      _dio = null;
+    }
 
-    // Nếu có custom base URL, set environment
+    await GetStorage.init();
+
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final cookiePath = '${appDocDir.path}/.cookies/';
+
+    _cookieJar = PersistCookieJar(
+      storage: FileStorage(cookiePath),
+      ignoreExpires: false,
+    );
+
+    print('🍪 Cookie jar initialized at: $cookiePath');
+
+    try {
+      final cookies = await _cookieJar!.loadForRequest(Uri.parse(AppConfig.baseUrl));
+      print('🍪 Loaded ${cookies.length} cookie(s) from storage');
+      for (var cookie in cookies) {
+        print('   - Cookie: ${cookie.name}');
+      }
+    } catch (e) {
+      print('⚠️ Could not load cookies: $e');
+    }
+
     if (customBaseUrl != null) {
       EnvironmentConfig.setEnvironment(EnvironmentConfig.development);
     }
 
-    // Khởi tạo Data Source
-    _remoteDataSource = AuthRemoteDataSourceImpl(dio: _dio);
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConfig.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    )..interceptors.addAll([
+      CookieManager(_cookieJar!),
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        requestHeader: true,
+        responseHeader: true,
+        logPrint: (obj) => print('[Auth API] $obj'),
+      ),
+    ]);
 
-    // Khởi tạo Repository
-    _repository = AuthRepositoryImpl(remoteDataSource: _remoteDataSource);
+    final _remoteDataSource = AuthRemoteDataSourceImpl(dio: _dio!);
+    final _repository = AuthRepositoryImpl(remoteDataSource: _remoteDataSource);
+    final _loginUseCase = LoginUseCase(_repository);
+    final _registerUseCase = RegisterUseCase(_repository);
+    final _verifyOTPUseCase = VerifyOTPUseCase(_repository);
+    final _resendOTPUseCase = ResendOTPUseCase(_repository);
 
-    // Khởi tạo Use Cases
-    _loginUseCase = LoginUseCase(_repository);
-    _registerUseCase = RegisterUseCase(_repository);
-    _verifyOTPUseCase = VerifyOTPUseCase(_repository);
-    _resendOTPUseCase = ResendOTPUseCase(_repository);
-
-    // Khởi tạo AuthController SINGLETON
     _authControllerInstance = AuthController(
       loginUseCase: _loginUseCase,
       registerUseCase: _registerUseCase,
@@ -84,86 +90,93 @@ class AuthDI {
       authRepository: _repository,
     );
 
+    await _authControllerInstance!.loadUserFromStorage();
+
+    if (_authControllerInstance!.currentUser != null) {
+      print('📱 Found user in storage: ${_authControllerInstance!.currentUser!.email}');
+    } else {
+      print('📱 No user found in storage');
+    }
+
     _initialized = true;
   }
 
-  // Trả về SINGLETON AuthController
   static AuthController getAuthController() {
     if (!_initialized) {
-      init();
+      throw Exception('AuthDI not initialized. Call AuthDI.init() first.');
     }
     return _authControllerInstance!;
   }
 
-  // Thêm method để restore user từ storage
   static Future<void> restoreUserSession() async {
     try {
-      // Gọi API getProfile để lấy user data từ cookie
-      final userProfile = await _repository.getProfile();
+      print('🔄 AuthDI: Đang khôi phục session...');
 
-      // Sử dụng public method hoặc setter nếu có
-      // Nếu không có setter, cần thêm vào AuthController
-      _authControllerInstance?.setCurrentUser(userProfile);
+      await Future.delayed(Duration(milliseconds: 100));
 
-      print('User session restored: ${userProfile.id}');
+      final cookies = await _cookieJar?.loadForRequest(
+        Uri.parse(AppConfig.baseUrl),
+      );
+
+      print('🍪 Checking cookies: ${cookies?.length ?? 0} cookie(s) found');
+
+      if (cookies == null || cookies.isEmpty) {
+        print('⚠️ Không có cookie → Cần đăng nhập lại');
+        await _authControllerInstance?.logout();
+        return;
+      }
+
+      print('✅ Tìm thấy ${cookies.length} cookie(s)');
+      for (var cookie in cookies) {
+        print('   - ${cookie.name}: ${cookie.value.substring(0, 20)}...');
+      }
+
+      await _authControllerInstance?.restoreSession();
+      print('✅ AuthDI: Session restored successfully');
     } catch (e) {
-      print('No user session to restore: $e');
+      print('⚠️ AuthDI: Không thể restore session: $e');
+      await _authControllerInstance?.logout();
     }
   }
 
-  // Getter cho Dio
+  /// ✅ HÀM MỚI: Xóa hoàn toàn cookies
+  static Future<void> clearAllCookies() async {
+    try {
+      print('🗑️ AuthDI: Đang xóa tất cả cookies...');
+
+      if (_cookieJar != null) {
+        // Xóa tất cả cookies
+        await _cookieJar!.deleteAll();
+        print('✅ Đã xóa tất cả cookies');
+
+        // Kiểm tra lại
+        final remainingCookies = await _cookieJar!.loadForRequest(
+          Uri.parse(AppConfig.baseUrl),
+        );
+        print('🍪 Còn lại: ${remainingCookies.length} cookie(s)');
+      }
+    } catch (e) {
+      print('❌ Lỗi khi xóa cookies: $e');
+    }
+  }
+
   static Dio get dio {
-    if (!_initialized) {
-      init();
+    if (!_initialized || _dio == null) {
+      throw Exception('AuthDI not initialized. Call AuthDI.init() first.');
     }
-    return _dio;
+    return _dio!;
   }
 
-  // Getter cho CookieJar
-  static CookieJar get cookieJar {
-    return _cookieJar;
-  }
-
-  // Getter cho AuthRepository
-  static AuthRepository get authRepository {
-    if (!_initialized) {
-      init();
+  static PersistCookieJar get cookieJar {
+    if (_cookieJar == null) {
+      throw Exception('CookieJar not initialized');
     }
-    return _repository;
+    return _cookieJar!;
   }
 
-  // Method để thay đổi environment
-  static void setEnvironment(String environment) {
-    EnvironmentConfig.setEnvironment(environment);
+  static Future<void> reset() async {
     _initialized = false;
-    init();
-  }
-
-  // Method để cấu hình custom base URL
-  static void configureBaseUrl(String baseUrl) {
-    _dio.options.baseUrl = baseUrl;
-    _remoteDataSource = AuthRemoteDataSourceImpl(dio: _dio);
-    _repository = AuthRepositoryImpl(remoteDataSource: _remoteDataSource);
-    _loginUseCase = LoginUseCase(_repository);
-    _registerUseCase = RegisterUseCase(_repository);
-    _verifyOTPUseCase = VerifyOTPUseCase(_repository);
-    _resendOTPUseCase = ResendOTPUseCase(_repository);
-  }
-
-  // Method để set custom Dio instance
-  static void configureDio(Dio customDio) {
-    _remoteDataSource = AuthRemoteDataSourceImpl(dio: customDio);
-    _repository = AuthRepositoryImpl(remoteDataSource: _remoteDataSource);
-    _loginUseCase = LoginUseCase(_repository);
-    _registerUseCase = RegisterUseCase(_repository);
-    _verifyOTPUseCase = VerifyOTPUseCase(_repository);
-    _resendOTPUseCase = ResendOTPUseCase(_repository);
-    _initialized = true;
-  }
-
-  // Reset tất cả
-  static void reset() {
-    _initialized = false;
-    _cookieJar.deleteAll(); // Xóa cookies khi reset
+    _authControllerInstance = null;
+    await _cookieJar?.deleteAll();
   }
 }

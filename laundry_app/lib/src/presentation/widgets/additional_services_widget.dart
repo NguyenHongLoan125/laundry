@@ -18,8 +18,6 @@ class AdditionalServicesWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-
         Column(
           children: services.map((service) {
             return Padding(
@@ -45,6 +43,10 @@ class _ServiceItemCard extends StatelessWidget {
     required this.onToggle,
   });
 
+  bool _isImageUrl(String icon) {
+    return icon.startsWith('http://') || icon.startsWith('https://');
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -58,7 +60,7 @@ class _ServiceItemCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Icon
+            // Icon với ảnh nhỏ hơn và có margin
             Container(
               width: 40,
               height: 40,
@@ -66,10 +68,48 @@ class _ServiceItemCard extends StatelessWidget {
                 color: const Color(0xFFEAF9F6),
                 shape: BoxShape.circle,
               ),
-              alignment: Alignment.center,
-              child: Text(
-                service.icon,
-                style: const TextStyle(fontSize: 20),
+              padding: const EdgeInsets.all(4), // Thêm padding để tạo margin
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _isImageUrl(service.icon)
+                    ? Image.network(
+                  service.icon,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
+                )
+                    : Center(
+                  child: Text(
+                    service.icon,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
